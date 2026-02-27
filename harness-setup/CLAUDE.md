@@ -105,24 +105,9 @@ And these repository variables:
 | `HARNESS_REPO` | The harness repo (e.g., `org/agent-harness`) |
 | `AUTHORIZED_APPROVERS` | Comma-separated GitHub usernames who can approve issues |
 
-### Step 5: Configure the Harness
+### Step 5: Test the Integration
 
-Tell the user to run these commands in the **harness repo** to register this project:
-
-```bash
-# Update the runtime to point at this repo
-make update-runtime-env \
-  PROJECT_NAME={project-name} \
-  WORK_DIR=. \
-  BASE_BRANCH={default-branch}
-
-# Rebuild Docker image (to include any harness-specific prompts)
-# Only needed if adding project-specific prompts to the harness
-docker build --platform linux/arm64 -t <ECR_URI>:latest .
-docker push <ECR_URI>:latest
-```
-
-### Step 6: Test the Integration
+No harness-side configuration is needed per project. The trigger workflow passes this repo's name, default branch, and working directory through the payload — multiple projects share one AgentCore runtime.
 
 Walk the user through a test run:
 
@@ -140,7 +125,7 @@ Walk the user through a test run:
    ```
 5. Verify the agent creates a branch and pushes changes
 
-### Step 7: Summary
+### Step 6: Summary
 
 Once everything is working, show a summary:
 

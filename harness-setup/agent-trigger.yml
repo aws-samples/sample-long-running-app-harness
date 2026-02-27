@@ -100,13 +100,20 @@ jobs:
             exit 0
           fi
 
+          # Detect default branch
+          DEFAULT_BRANCH=$(gh api "repos/$GITHUB_REPOSITORY" --jq '.default_branch')
+          echo "Default branch: $DEFAULT_BRANCH"
+
           # Trigger the Agent Builder on the harness repo
           echo "Triggering Agent Builder on $HARNESS_REPO for issue #$ISSUE_NUMBER..."
 
           # Use the harness repo token to trigger the workflow
+          # Pass all per-project config so the harness runtime doesn't need reconfiguring
           GITHUB_TOKEN="$HARNESS_TOKEN" gh workflow run agent-builder.yml \
             --repo "$HARNESS_REPO" \
             -f issue_number="$ISSUE_NUMBER" \
-            -f target_repo="$GITHUB_REPOSITORY"
+            -f target_repo="$GITHUB_REPOSITORY" \
+            -f base_branch="$DEFAULT_BRANCH" \
+            -f work_dir="."
 
           echo "Agent Builder triggered for issue #$ISSUE_NUMBER"

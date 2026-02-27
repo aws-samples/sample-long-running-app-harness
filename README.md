@@ -254,12 +254,12 @@ cp /path/to/harness-repo/prompts/PROJECT_HARNESS_TEMPLATE.md .harness/PROJECT_HA
 cp /path/to/harness-repo/harness-setup/agent-trigger.yml .github/workflows/
 # Edit .harness/PROJECT_HARNESS.md with your project's build/test/verify details
 # Edit .github/workflows/agent-trigger.yml with your harness repo name
-
-# In the harness repo:
-make update-runtime-env PROJECT_NAME=myproject WORK_DIR=. BASE_BRANCH=main
+# Add GitHub secrets: HARNESS_REPO_TOKEN, and variables: HARNESS_REPO, AUTHORIZED_APPROVERS
 ```
 
-The agent discovers `.harness/PROJECT_HARNESS.md` from the cloned repo at runtime — no Docker rebuild needed per project. See `prompts/PROJECT_HARNESS_TEMPLATE.md` for the full template.
+No harness-side configuration needed per project. The trigger workflow passes the target repo's name, default branch, and working directory through the payload — multiple projects share one AgentCore runtime.
+
+See `prompts/PROJECT_HARNESS_TEMPLATE.md` for the full template.
 
 ## Resetting the Agent
 

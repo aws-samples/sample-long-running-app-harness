@@ -1957,6 +1957,18 @@ async def handler(payload: Dict[str, Any], context: Any) -> Iterator[Dict[str, A
     github_repo = payload.get('github_repo', os.environ.get('GITHUB_REPO'))
     resume_session = payload.get('resume_session', False)
 
+    # Per-project overrides from payload (set by target repo's trigger workflow)
+    # These take precedence over runtime env vars so multiple projects can share one runtime
+    global WORK_DIR, BASE_BRANCH
+    payload_base_branch = payload.get('base_branch', '')
+    payload_work_dir = payload.get('work_dir', '')
+    if payload_base_branch:
+        BASE_BRANCH = payload_base_branch
+        print(f"📋 Using base_branch from payload: {BASE_BRANCH}")
+    if payload_work_dir:
+        WORK_DIR = payload_work_dir
+        print(f"📋 Using work_dir from payload: {WORK_DIR}")
+
     # Set ISSUE_NUMBER in environment for subprocess to access (for CloudWatch log filtering)
     if issue_number:
         os.environ['ISSUE_NUMBER'] = str(issue_number)
