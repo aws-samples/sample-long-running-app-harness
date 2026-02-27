@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from .config import (
+    ALTERNATIVE_PROJECT_FILES,
     OPTIONAL_PROJECT_FILES,
     REQUIRED_PROJECT_FILES,
 )
@@ -38,12 +39,17 @@ class SessionManager:
                     f"Project prompts directory not found: {project_prompts_dir}"
                 )
 
-            # Validate required files exist
-            for required_file in REQUIRED_PROJECT_FILES:
-                if not (project_prompts_dir / required_file).exists():
-                    raise ValueError(
-                        f"Project '{project_name}' missing required file: {required_file}"
-                    )
+            # Validate project has either BUILD_PLAN.md or PROJECT_HARNESS.md
+            has_required = any(
+                (project_prompts_dir / f).exists() for f in REQUIRED_PROJECT_FILES
+            )
+            has_alternative = any(
+                (project_prompts_dir / f).exists() for f in ALTERNATIVE_PROJECT_FILES
+            )
+            if not has_required and not has_alternative:
+                raise ValueError(
+                    f"Project '{project_name}' needs BUILD_PLAN.md or PROJECT_HARNESS.md"
+                )
 
             # Check for optional files and warn if missing
             for optional_file in OPTIONAL_PROJECT_FILES:
@@ -72,11 +78,14 @@ class SessionManager:
         projects = []
         for item in prompts_dir.iterdir():
             if item.is_dir():
-                # Check if it has required files
-                has_required = all(
+                # Check if it has required files (BUILD_PLAN.md or PROJECT_HARNESS.md)
+                has_required = any(
                     (item / req_file).exists() for req_file in REQUIRED_PROJECT_FILES
                 )
-                if has_required:
+                has_alternative = any(
+                    (item / alt_file).exists() for alt_file in ALTERNATIVE_PROJECT_FILES
+                )
+                if has_required or has_alternative:
                     projects.append(item.name)
 
         return projects

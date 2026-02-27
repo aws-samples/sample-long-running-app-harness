@@ -22,7 +22,9 @@ WARNING_THRESHOLD_MEDIUM = 75  # Yellow notice
 TEMPLATE_FILE_EXTENSIONS = {".txt", ".md"}
 
 # Required project files (system_prompt.txt now comes from top-level prompts directory)
+# A project needs either BUILD_PLAN.md (greenfield) or PROJECT_HARNESS.md (existing project)
 REQUIRED_PROJECT_FILES = ["BUILD_PLAN.md"]
+ALTERNATIVE_PROJECT_FILES = ["PROJECT_HARNESS.md"]
 OPTIONAL_PROJECT_FILES = ["DEBUGGING_GUIDE.md", "system_prompt.txt"]
 
 # Log file settings

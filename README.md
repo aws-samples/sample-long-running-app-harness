@@ -185,6 +185,59 @@ make launch-local PROJECT_NAME=myapp
 - `prompts/{PROJECT_NAME}/DEBUGGING_GUIDE.md` is loaded for debugging context
 - Shared prompts in `prompts/system_prompt.txt` and `prompts/DEBUGGING_GUIDE.md` are always loaded
 
+### Working with Existing Projects (Experimental)
+
+The agent can work on existing codebases, not just greenfield builds. This repo acts as a **control plane** — the Docker image, AgentCore runtime, and shared infrastructure. The target repo is the **workspace** — the existing project the agent modifies.
+
+```
+┌─────────────────────────┐     ┌──────────────────────────┐
+│  Harness Repo (this)    │     │  Target Repo (user's)    │
+│                         │     │                          │
+│  - Docker image/ECR     │     │  - Their actual code     │
+│  - AgentCore runtime    │     │  - Their CI/CD workflows │
+│  - CDK infra (shared)   │     │  - Issues live here      │
+│  - Makefile             │     │  - .harness/             │
+│                         │     │    PROJECT_HARNESS.md    │
+│                         │     │  - .github/workflows/    │
+│                         │     │    agent-trigger.yml     │
+└─────────┬───────────────┘     └───────────────────┬──────┘
+          │                                         │
+          │  Docker image has the agent brain        │  Issue + rocket reaction
+          │                                         │
+          ▼                                         ▼
+   ┌──────────────────────────────────────────────────────┐
+   │  AgentCore Runtime (AWS)                             │
+   │                                                      │
+   │  1. Triggered by agent-trigger.yml on target repo    │
+   │  2. Clones TARGET repo (not harness repo)            │
+   │  3. Reads .harness/PROJECT_HARNESS.md from repo      │
+   │     (falls back to Docker image if not in repo)      │
+   │  4. Agent works at repo root (WORK_DIR=.)            │
+   │  5. Pushes branch to target repo                     │
+   │  6. Target repo's own CI/CD handles the rest         │
+   └──────────────────────────────────────────────────────┘
+```
+
+#### Quick Start
+
+The easiest way to set up is to copy `harness-setup/CLAUDE.md` into your target repo and run `claude` — it will walk you through the full setup interactively.
+
+Alternatively, set it up manually:
+
+```bash
+# In the target repo:
+mkdir -p .harness
+# Fill in .harness/PROJECT_HARNESS.md from prompts/PROJECT_HARNESS_TEMPLATE.md
+cp path/to/harness-repo/harness-setup/agent-trigger.yml .github/workflows/
+
+# In the harness repo:
+make update-runtime-env PROJECT_NAME=myproject WORK_DIR=. BASE_BRANCH=main
+```
+
+The `.harness/PROJECT_HARNESS.md` file tells the agent how to build, test, and verify the existing project. The agent discovers it from the cloned repo at runtime — no Docker rebuild needed per project.
+
+See `prompts/PROJECT_HARNESS_TEMPLATE.md` for the full template with all available sections.
+
 ## Resetting the Agent
 
 To wipe all agent state and start fresh:

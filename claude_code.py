@@ -449,18 +449,26 @@ def parse_arguments() -> argparse.Namespace:
 
 
 def load_build_plan_content(generation_dir: Path) -> str:
-    """Load BUILD_PLAN.md content for use in templates."""
+    """Load BUILD_PLAN.md or PROJECT_HARNESS.md content for use in templates."""
     build_plan_path = generation_dir / "prompts" / "BUILD_PLAN.md"
-    if not build_plan_path.exists():
-        print(f"⚠️ Warning: BUILD_PLAN.md not found at {build_plan_path}")
+    harness_path = generation_dir / "prompts" / "PROJECT_HARNESS.md"
+
+    # Prefer BUILD_PLAN.md, fall back to PROJECT_HARNESS.md
+    if build_plan_path.exists():
+        target_path = build_plan_path
+    elif harness_path.exists():
+        target_path = harness_path
+        print("📋 Using PROJECT_HARNESS.md (existing project mode)")
+    else:
+        print(f"⚠️ Warning: Neither BUILD_PLAN.md nor PROJECT_HARNESS.md found in {generation_dir / 'prompts'}")
         return "[BUILD_PLAN.md not found]"
 
     try:
-        return build_plan_path.read_text(encoding="utf-8")
+        return target_path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as e:
         error_type = "encoding" if isinstance(e, UnicodeDecodeError) else "file system"
-        print(f"⚠️ Warning: Could not read BUILD_PLAN.md ({error_type} error): {e}")
-        return "[BUILD_PLAN.md could not be loaded]"
+        print(f"⚠️ Warning: Could not read {target_path.name} ({error_type} error): {e}")
+        return f"[{target_path.name} could not be loaded]"
 
 
 def create_thyme_style_message(
@@ -492,22 +500,30 @@ def create_thyme_style_message(
 
 
 def create_thyme_style_message_from_prompts_dir(prompts_dir: Path) -> str:
-    """Create a user message with BUILD_PLAN content loaded directly from prompts directory."""
+    """Create a user message with BUILD_PLAN or PROJECT_HARNESS content loaded directly from prompts directory."""
     build_plan_path = prompts_dir / "BUILD_PLAN.md"
-    if not build_plan_path.exists():
-        print(f"⚠️ Warning: BUILD_PLAN.md not found at {build_plan_path}")
-        build_plan_content = "[BUILD_PLAN.md not found]"
-    else:
-        try:
-            build_plan_content = build_plan_path.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError) as e:
-            error_type = (
-                "encoding" if isinstance(e, UnicodeDecodeError) else "file system"
-            )
-            print(f"⚠️ Warning: Could not read BUILD_PLAN.md ({error_type} error): {e}")
-            build_plan_content = "[BUILD_PLAN.md could not be loaded]"
+    harness_path = prompts_dir / "PROJECT_HARNESS.md"
 
-    return f"Please implement the application based on this build plan:\n\n{build_plan_content}"
+    # Prefer BUILD_PLAN.md, fall back to PROJECT_HARNESS.md
+    if build_plan_path.exists():
+        target_path = build_plan_path
+    elif harness_path.exists():
+        target_path = harness_path
+        print("📋 Using PROJECT_HARNESS.md (existing project mode)")
+    else:
+        print(f"⚠️ Warning: Neither BUILD_PLAN.md nor PROJECT_HARNESS.md found at {prompts_dir}")
+        return "Please implement the application based on this build plan:\n\n[BUILD_PLAN.md not found]"
+
+    try:
+        content = target_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as e:
+        error_type = (
+            "encoding" if isinstance(e, UnicodeDecodeError) else "file system"
+        )
+        print(f"⚠️ Warning: Could not read {target_path.name} ({error_type} error): {e}")
+        content = f"[{target_path.name} could not be loaded]"
+
+    return f"Please implement the application based on this build plan:\n\n{content}"
 
 
 def create_enhancement_message(
@@ -622,6 +638,94 @@ Only after meeting ALL requirements:
 - You used sed/awk to bulk-modify tests.json
 
 Remember: You are ENHANCING an existing app, not building from scratch. Preserve what works, add what's needed.
+
+You should run `pwd` at the start of the session to get your bearings. You will only be able to operate on files within your current working directory.
+"""
+
+
+def create_harness_enhancement_message(
+    feature_request_path: Path,
+    harness_path: Path,
+    frontend_port: int = DEFAULT_FRONTEND_PORT,
+    backend_port: int = DEFAULT_BACKEND_PORT,
+) -> str:
+    """Create a user message for enhancement mode with PROJECT_HARNESS.md context.
+
+    This is used when the agent is enhancing an existing project that has a
+    PROJECT_HARNESS.md instead of BUILD_PLAN.md. It includes the harness config
+    (how to build, test, authenticate, verify) alongside the feature request.
+    """
+    # Read the feature request file
+    try:
+        feature_request_content = Path(feature_request_path).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as e:
+        error_type = "encoding" if isinstance(e, UnicodeDecodeError) else "file system"
+        print(f"⚠️ Warning: Could not read feature request ({error_type} error): {e}")
+        feature_request_content = "[FEATURE_REQUEST.md could not be loaded]"
+
+    # Read the harness config
+    try:
+        harness_content = harness_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as e:
+        error_type = "encoding" if isinstance(e, UnicodeDecodeError) else "file system"
+        print(f"⚠️ Warning: Could not read PROJECT_HARNESS.md ({error_type} error): {e}")
+        harness_content = "[PROJECT_HARNESS.md could not be loaded]"
+
+    return f"""# Enhancement Mode - Existing Project with Harness Config
+
+You are working on an EXISTING project. Your task is to implement the feature described below while preserving all existing functionality.
+
+## Project Harness Configuration
+
+The following describes how this project is built, tested, and verified:
+
+{harness_content}
+
+## Feature Request
+
+{feature_request_content}
+
+## Critical Instructions
+
+### 1. Understand the Existing Codebase
+- Start by reading `claude-progress.txt` if it exists to understand previous agent work
+- Review the project structure and existing code before making changes
+- Check for existing tests and understand the test patterns used
+
+### 2. Preserve Existing Functionality
+- DO NOT break any existing features
+- DO NOT remove or modify existing tests
+- All existing tests must continue to pass after your changes
+
+### 3. Follow the Project's Build System
+- Use the build commands specified in the harness config above
+- Follow existing code patterns and conventions
+- Run the project's test suite to verify nothing is broken
+
+### 4. Implement the New Feature
+- Add the requested functionality as described in the feature request
+- Follow the existing code patterns and style
+- Add tests for the new feature using the project's test framework
+- Update claude-progress.txt with your changes
+
+### 5. Port Configuration
+- Frontend MUST use port: {frontend_port}
+- Backend MUST use port: {backend_port}
+
+### 6. Test Verification (CRITICAL - ENFORCED BY SYSTEM)
+Follow the verification approach specified in the harness config.
+For web UIs, take screenshots with playwright-test.cjs.
+For backend/API changes, use backend-verify.cjs.
+
+### 7. Completion Requirements
+Before signaling completion:
+1. All build commands succeed
+2. All existing tests still pass
+3. New feature is working and verified
+4. Update claude-progress.txt
+
+Only after meeting ALL requirements:
+- Signal completion with: "🎉 IMPLEMENTATION COMPLETE - ALL TASKS FINISHED"
 
 You should run `pwd` at the start of the session to get your bearings. You will only be able to operate on files within your current working directory.
 """
@@ -1172,13 +1276,25 @@ async def _run_single_session(
         if feature_request_path and feature_request_path.exists():
             # Enhancement mode - use feature request as task specification
             query_type = "enhancement"
-            message = create_enhancement_message(
-                feature_request_path,
-                generation_dir,
-                args.frontend_port,
-                args.backend_port,
-            )
-            print(f"User: [Enhancement mode - implementing feature from {feature_request_path}]")
+
+            # Check if this project uses PROJECT_HARNESS.md instead of BUILD_PLAN.md
+            harness_file = generation_dir / "prompts" / "PROJECT_HARNESS.md"
+            if harness_file.exists() and not (generation_dir / "prompts" / "BUILD_PLAN.md").exists():
+                message = create_harness_enhancement_message(
+                    feature_request_path,
+                    harness_file,
+                    args.frontend_port,
+                    args.backend_port,
+                )
+                print(f"User: [Harness enhancement mode - implementing feature from {feature_request_path}]")
+            else:
+                message = create_enhancement_message(
+                    feature_request_path,
+                    generation_dir,
+                    args.frontend_port,
+                    args.backend_port,
+                )
+                print(f"User: [Enhancement mode - implementing feature from {feature_request_path}]")
 
             # Mark as processed so continuation sessions don't re-read it
             # Only rename if it's not the explicit --enhance-feature arg (which might be reused)
@@ -1830,7 +1946,11 @@ async def main() -> None:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # Check if this is an existing project (for resume vs fresh start)
-    is_existing_project = generation_dir.exists() and (generation_dir / "package.json").exists()
+    # Support multiple project types beyond just Node.js
+    is_existing_project = generation_dir.exists() and any(
+        (generation_dir / f).exists()
+        for f in ["package.json", "Cargo.toml", "go.mod", "pyproject.toml", "Makefile"]
+    )
 
     if is_existing_project:
         # Directory exists with code - automatic resume
@@ -1886,11 +2006,33 @@ async def main() -> None:
     print(f"Working directory: {generation_dir}")
     print(f"Log file: {log_file_path}")
 
-    # Load system prompt (no templating needed since it has no variables)
+    # Discover .harness/ config from the working directory (for existing projects)
+    # This handles repos that carry their own harness config
+    repo_harness = generation_dir / ".harness" / "PROJECT_HARNESS.md"
     prompts_dir_path = generation_dir / "prompts"
+    if repo_harness.exists() and not (prompts_dir_path / "BUILD_PLAN.md").exists() and not (prompts_dir_path / "PROJECT_HARNESS.md").exists():
+        prompts_dir_path.mkdir(parents=True, exist_ok=True)
+        import shutil
+        shutil.copy2(repo_harness, prompts_dir_path / "PROJECT_HARNESS.md")
+        builtins.print(f"📋 Discovered .harness/PROJECT_HARNESS.md from repo")
+        # Copy any other .harness/ files
+        for item in (generation_dir / ".harness").iterdir():
+            if item.is_file() and item.name != "PROJECT_HARNESS.md":
+                dest = prompts_dir_path / item.name
+                if not dest.exists():
+                    shutil.copy2(item, dest)
+
+    # Load system prompt (no templating needed since it has no variables)
     system_prompt_path = Path(prompts_dir_path) / "system_prompt.txt"
     system_prompt = system_prompt_path.read_text(encoding="utf-8")
+
+    # Prefer BUILD_PLAN.md, fall back to PROJECT_HARNESS.md for existing projects
     build_plan_path = f"{prompts_dir_path}/BUILD_PLAN.md"
+    if not Path(build_plan_path).exists():
+        harness_path = prompts_dir_path / "PROJECT_HARNESS.md"
+        if harness_path.exists():
+            build_plan_path = str(harness_path)
+            builtins.print("📋 Using PROJECT_HARNESS.md (existing project mode)")
 
     # Show custom ports if used
     if (
