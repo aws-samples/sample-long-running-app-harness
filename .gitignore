@@ -65,3 +65,6 @@ archive_old_scripts/
 
 # AWS Bedrock AgentCore config (use .bedrock_agentcore.yaml.template)
 .bedrock_agentcore.yaml
+
+# Security review artifacts (internal only)
+THREAT_MODEL.md

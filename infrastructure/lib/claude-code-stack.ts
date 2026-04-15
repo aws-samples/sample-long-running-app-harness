@@ -381,6 +381,7 @@ export class ClaudeCodeStack extends cdk.Stack {
       bucketName: `${projectName}-${environment}-screenshots-${this.account}`,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
+      enforceSSL: true,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
@@ -408,6 +409,7 @@ export class ClaudeCodeStack extends cdk.Stack {
       bucketName: `${projectName}-${environment}-previews-${this.account}`,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
+      enforceSSL: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       lifecycleRules: [

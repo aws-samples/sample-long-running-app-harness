@@ -2,6 +2,8 @@
 
 An autonomous agent system that builds full-stack applications from GitHub issues using AWS Bedrock AgentCore and the Claude Agent SDK.
 
+> **Important:** This is sample code for demonstration and educational purposes only, and should not be used in production as-is. You should work with your security and legal teams to meet your organizational security, regulatory, and compliance requirements before deploying any solution based on this code. AWS and Anthropic are not responsible for any security issues that may arise from using this sample code.
+
 ## Quick Start
 
 ### Prerequisites
@@ -204,6 +206,27 @@ Run `make show-config` to see all current values.
 │   └── deploy-preview.yml          # Deploys built app to CloudFront
 └── Makefile                        # All management commands
 ```
+
+## Production Hardening
+
+This sample code prioritizes clarity and ease of deployment. Before using it in a production environment, consider the following security and operational improvements:
+
+### Networking
+- **VPC Flow Logs** — Enable VPC Flow Logs for network traffic auditing (AwsSolutions-VPC7)
+
+### Secrets Management
+- **Secret rotation** — Configure automatic rotation for Secrets Manager secrets. External API keys (e.g., Anthropic) require a custom rotation Lambda (AwsSolutions-SMG4)
+
+### S3 Buckets
+- **Server access logging** — Enable access logging on the screenshots and previews buckets for audit trails (AwsSolutions-S1)
+
+### CloudFront Distributions
+- **WAF integration** — Attach AWS WAF to CloudFront distributions for request filtering and rate limiting (AwsSolutions-CFR2)
+- **Access logging** — Enable CloudFront access logging for request-level auditing (AwsSolutions-CFR3)
+- **TLS 1.2 minimum** — Enforce TLSv1.2 minimum for viewer connections by configuring a custom ACM certificate with a `SecurityPolicyProtocol.TLS_V1_2_2021` minimum protocol version (AwsSolutions-CFR4)
+
+### IAM
+- **Scope down the infra deploy role** — The `GitHubInfraDeployRole` uses broad service-level wildcards (`lambda:*`, `s3:*`, etc.) to support dynamic CDK-generated resource names. For production, scope these to specific resource ARN patterns matching your application (AwsSolutions-IAM5 findings 23-31)
 
 ## License
 
