@@ -4,6 +4,50 @@ An autonomous agent system that builds full-stack applications from GitHub issue
 
 > **Important:** This is sample code for demonstration and educational purposes only, and should not be used in production as-is. You should work with your security and legal teams to meet your organizational security, regulatory, and compliance requirements before deploying any solution based on this code. AWS and Anthropic are not responsible for any security issues that may arise from using this sample code.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    User([Developer]) -->|opens issue + rocket reaction| Issue[(GitHub Issue)]
+
+    subgraph GHA [GitHub Actions]
+        Poller[issue-poller.yml<br/>cron every 5m]
+        Builder[agent-builder.yml<br/>workflow_dispatch]
+        DeployPreview[deploy-preview.yml<br/>on push to agent-runtime]
+        DeployInfra[deploy-infrastructure.yml<br/>on CDK changes]
+    end
+
+    Issue -->|approved issues| Poller
+    Poller -->|invokes| Builder
+
+    subgraph AWS [AWS]
+        subgraph AgentCore [Bedrock AgentCore Runtime]
+            Entry[bedrock_entrypoint.py<br/>session orchestrator]
+            CC[claude_code.py<br/>Claude Agent SDK loop]
+            Entry --> CC
+        end
+        Secrets[(Secrets Manager<br/>GitHub token)]
+        SSM[(SSM Parameter Store<br/>session + deploy state)]
+        Bedrock[Amazon Bedrock<br/>Claude Opus]
+        S3[(S3<br/>screenshots + previews)]
+        CF[CloudFront<br/>preview site]
+    end
+
+    Builder -->|InvokeAgentRuntime| Entry
+    Entry -.reads.-> Secrets
+    Entry -.reads/writes.-> SSM
+    CC <-->|model calls| Bedrock
+    CC -->|screenshots| S3
+
+    CC -->|commits + post-commit push| AgentRuntime[[agent-runtime branch]]
+    AgentRuntime --> DeployPreview
+    AgentRuntime --> DeployInfra
+    DeployPreview -->|builds & deploys| S3
+    S3 --> CF
+    CF --> User
+    CC -->|progress comments| Issue
+```
+
 ## Quick Start
 
 ### Prerequisites
