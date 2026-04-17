@@ -65,46 +65,48 @@ flowchart LR
 cp Makefile.local.example Makefile.local
 # Edit Makefile.local: set AWS_PROFILE, AWS_REGION, VPC_ID, GITHUB_REPO
 
-# 1. Deploy CDK infrastructure (ECR, S3 buckets, CloudFront, IAM roles)
+# 1. Register the GitHub Actions OIDC provider in your AWS account (one-time)
+make setup-oidc
+
+# 2. Deploy CDK infrastructure (ECR, S3 buckets, CloudFront, IAM roles)
+#    Roles trust GitHub Actions from GITHUB_REPO via OIDC — no IAM user / access keys.
 make deploy-infra
 
-# 2. Build and push the Docker image (ECR URI from: make show-config)
+# 3. Build and push the Docker image (ECR URI from: make show-config)
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <ECR_URI>
 docker build --platform linux/arm64 -t <ECR_URI>:latest .
 docker push <ECR_URI>:latest
 
-# 3. Create the AgentCore runtime (first time only)
+# 4. Create the AgentCore runtime (first time only)
 make create-runtime
 # Copy the agentRuntimeId from the output into Makefile.local as AGENT_RUNTIME_ID
 # Then update the runtime environment:
 make update-runtime-env
+
+# 5. Populate repo variables in GitHub (prints the gh commands for you)
+make print-oidc-setup | sh
 ```
 
 ### GitHub Setup
 
-1. **Secrets** (Settings > Secrets and variables > Actions > Secrets):
+GitHub Actions use [OIDC federation](https://aws.amazon.com/blogs/security/use-iam-roles-to-connect-github-actions-to-actions-in-aws/) to assume short-lived IAM roles — **no long-lived `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` secrets required**. The role ARNs below are stored as **variables** (not secrets) since ARNs aren't sensitive.
 
-   | Secret | Description |
-   |--------|-------------|
-   | `AWS_ACCESS_KEY_ID` | IAM user access key for GitHub Actions |
-   | `AWS_SECRET_ACCESS_KEY` | IAM user secret key |
-   | `AWS_AGENTCORE_ROLE_ARN` | IAM role ARN for invoking AgentCore (output of CDK deploy) |
-   | `AWS_PREVIEW_DEPLOY_ROLE_ARN` | IAM role ARN for deploying previews (output of CDK deploy) |
-   | `AWS_INFRA_DEPLOY_ROLE_ARN` | IAM role ARN for deploying agent-written CDK infra (output of CDK deploy) |
-
-2. **Variables** (Settings > Secrets and variables > Actions > Variables):
+1. **Variables** (Settings > Secrets and variables > Actions > Variables) — `make print-oidc-setup` generates the `gh variable set` commands from your deployed CloudFormation outputs:
 
    | Variable | Description |
    |----------|-------------|
-   | `AUTHORIZED_APPROVERS` | Comma-separated GitHub usernames who can approve builds |
    | `AWS_REGION` | AWS region where infrastructure is deployed (e.g. `us-east-1`) |
+   | `AWS_AGENTCORE_ROLE_ARN` | IAM role ARN for invoking AgentCore (output of CDK deploy) |
+   | `AWS_PREVIEW_DEPLOY_ROLE_ARN` | IAM role ARN for deploying previews (output of CDK deploy) |
+   | `AWS_INFRA_DEPLOY_ROLE_ARN` | IAM role ARN for deploying agent-written CDK infra (output of CDK deploy) |
    | `AGENTCORE_AGENT_ID` | AgentCore runtime ID (from `make create-runtime` output) |
+   | `AUTHORIZED_APPROVERS` | Comma-separated GitHub usernames who can approve builds |
    | `APP_CDK_STACK_NAME` | CDK stack name for agent-generated app (e.g. `canopy-app-stack`) |
    | `PREVIEWS_BUCKET_NAME` | S3 bucket for preview deployments (output of CDK deploy) |
    | `PREVIEWS_CDN_DOMAIN` | CloudFront domain for previews (output of CDK deploy) |
    | `PREVIEWS_DISTRIBUTION_ID` | CloudFront distribution ID for cache invalidation (output of CDK deploy) |
 
-3. **Labels** (must exist for workflows):
+2. **Labels** (must exist for workflows):
 
    ```bash
    gh api repos/OWNER/REPO/labels -f name="agent-building" -f color="FBCA04" -f description="Agent is actively working on this issue"

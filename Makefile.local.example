@@ -32,5 +32,7 @@ AGENTCORE_ROLE_NAME ?= claude-code-agentcore-role
 EXECUTION_ROLE_ARN ?= arn:aws:iam::YOUR_ACCOUNT_ID:role/claude-code-agentcore-role
 
 # ─── GitHub Configuration ─────────────────────────────────────────────────────
-# The GitHub repo the agent will clone and commit to (owner/repo format)
+# The GitHub repo the agent will clone and commit to (owner/repo format).
+# Also used to scope the OIDC trust policy on the GitHub Actions IAM roles, so
+# workflows running in this repo can assume them via federated credentials.
 GITHUB_REPO ?= YOUR_ORG/YOUR_REPO

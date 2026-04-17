@@ -50,6 +50,40 @@ export class ClaudeCodeStack extends cdk.Stack {
     // Defaults to 'canopy'; override with: cdk deploy -c appName=myapp
     const appName = this.node.tryGetContext('appName') || 'canopy';
 
+    // GitHub repository (owner/repo) that GitHub Actions workflows run in.
+    // Used to scope the OIDC trust policy on the GitHub Actions IAM roles.
+    // Pass via: cdk deploy -c githubRepo=aws-samples/sample-long-running-app-harness
+    const githubRepo = this.node.tryGetContext('githubRepo') || '';
+    if (!githubRepo || !/^[^/]+\/[^/]+$/.test(githubRepo)) {
+      throw new Error(
+        "CDK context 'githubRepo' is required in 'owner/repo' format. " +
+        "Pass via: cdk deploy -c githubRepo=owner/repo (or set GITHUB_REPO in Makefile.local)."
+      );
+    }
+
+    // Reference the GitHub OIDC provider. This provider must already exist in
+    // the account (create once with: make setup-oidc). We reference it by ARN
+    // so CDK does not try to manage its lifecycle across stacks.
+    const githubOidcProviderArn =
+      `arn:aws:iam::${cdk.Stack.of(this).account}:oidc-provider/token.actions.githubusercontent.com`;
+    const githubOidcProvider = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
+      this,
+      'GitHubOidcProvider',
+      githubOidcProviderArn,
+    );
+
+    // Trust principal for GitHub Actions: any workflow in the configured repo
+    // on any branch/tag. Tighten `token.actions.githubusercontent.com:sub` if
+    // you want to restrict to specific branches (e.g. `repo:${githubRepo}:ref:refs/heads/main`).
+    const githubActionsPrincipal = new iam.OpenIdConnectPrincipal(githubOidcProvider, {
+      StringEquals: {
+        'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
+      },
+      StringLike: {
+        'token.actions.githubusercontent.com:sub': `repo:${githubRepo}:*`,
+      },
+    });
+
     // ========================================================================
     // VPC - Required for EFS
     // Import existing VPC via context, or create a new one
@@ -144,17 +178,9 @@ export class ClaudeCodeStack extends cdk.Stack {
     const githubAgentCoreRole = new iam.Role(this, 'GitHubAgentCoreRole', {
       roleName: `${projectName}-github-agentcore-invoker`,
       description: 'Role for GitHub Actions to invoke Bedrock AgentCore',
-      assumedBy: new iam.AccountPrincipal(cdk.Stack.of(this).account),
+      assumedBy: githubActionsPrincipal,
       maxSessionDuration: cdk.Duration.hours(8),
     });
-
-    githubAgentCoreRole.assumeRolePolicy?.addStatements(
-      new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
-        principals: [new iam.AccountPrincipal(cdk.Stack.of(this).account)],
-        actions: ['sts:TagSession'],
-      })
-    );
 
     // Grant Bedrock AgentCore permissions
     githubAgentCoreRole.addToPolicy(new iam.PolicyStatement({
@@ -490,21 +516,13 @@ function handler(event) {
       );
     }
 
-    // IAM Role for GitHub Actions Preview Deployment
+    // IAM Role for GitHub Actions Preview Deployment (assumed via GitHub OIDC)
     const githubPreviewDeployRole = new iam.Role(this, 'GitHubPreviewDeployRole', {
       roleName: `${projectName}-github-preview-deploy`,
       description: 'Role for GitHub Actions to deploy app previews to S3/CloudFront',
-      assumedBy: new iam.AccountPrincipal(cdk.Stack.of(this).account),
+      assumedBy: githubActionsPrincipal,
       maxSessionDuration: cdk.Duration.hours(1),
     });
-
-    githubPreviewDeployRole.assumeRolePolicy?.addStatements(
-      new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
-        principals: [new iam.AccountPrincipal(cdk.Stack.of(this).account)],
-        actions: ['sts:TagSession'],
-      })
-    );
 
     // S3 permissions for preview deployment
     githubPreviewDeployRole.addToPolicy(new iam.PolicyStatement({
@@ -539,42 +557,16 @@ function handler(event) {
       resources: ['*'],
     }));
 
-    // Create IAM user for GitHub Actions (or use existing user via context)
-    const existingGithubActionsUserName = this.node.tryGetContext('githubActionsUserName') || '';
-    const githubActionsUser = existingGithubActionsUserName
-      ? iam.User.fromUserName(this, 'GitHubActionsUser', existingGithubActionsUserName)
-      : new iam.User(this, 'GitHubActionsUser');
-
-    new iam.Policy(this, 'GitHubActionsUserPreviewDeployPolicy', {
-      policyName: 'AllowAssumePreviewDeployRole',
-      users: [githubActionsUser],
-      statements: [
-        new iam.PolicyStatement({
-          sid: 'AllowAssumePreviewDeployRole',
-          effect: iam.Effect.ALLOW,
-          actions: ['sts:AssumeRole', 'sts:TagSession'],
-          resources: [githubPreviewDeployRole.roleArn],
-        }),
-      ],
-    });
-
     // ========================================================================
     // IAM Role for GitHub Actions Infrastructure Deployment (CDK)
+    // Assumed directly via GitHub OIDC - no IAM user / access keys needed.
     // ========================================================================
     const infraDeployRole = new iam.Role(this, 'GitHubInfraDeployRole', {
       roleName: `${projectName}-github-infra-deploy`,
       description: 'Role for GitHub Actions to deploy agent-written CDK infrastructure',
-      assumedBy: new iam.AccountPrincipal(cdk.Stack.of(this).account),
+      assumedBy: githubActionsPrincipal,
       maxSessionDuration: cdk.Duration.hours(1),
     });
-
-    infraDeployRole.assumeRolePolicy?.addStatements(
-      new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
-        principals: [new iam.AccountPrincipal(cdk.Stack.of(this).account)],
-        actions: ['sts:TagSession'],
-      })
-    );
 
     // Scoped allowlist: only these services can be provisioned
     infraDeployRole.addToPolicy(new iam.PolicyStatement({
@@ -624,20 +616,6 @@ function handler(event) {
       ],
       resources: ['*'],
     }));
-
-    // Allow GitHub Actions user to assume the infra deploy role
-    new iam.Policy(this, 'GitHubActionsUserInfraDeployPolicy', {
-      policyName: 'AllowAssumeInfraDeployRole',
-      users: [githubActionsUser],
-      statements: [
-        new iam.PolicyStatement({
-          sid: 'AllowAssumeInfraDeployRole',
-          effect: iam.Effect.ALLOW,
-          actions: ['sts:AssumeRole', 'sts:TagSession'],
-          resources: [infraDeployRole.roleArn],
-        }),
-      ],
-    });
 
     // ========================================================================
     // CloudWatch Dashboard - Agent Monitoring for re:Invent Demo

@@ -7,6 +7,7 @@ on:
 permissions:
   issues: write
   contents: read
+  id-token: write  # Required for GitHub OIDC -> AWS STS
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
@@ -33,10 +34,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_AGENTCORE_ROLE_ARN }}
+          role-to-assume: ${{ vars.AWS_AGENTCORE_ROLE_ARN }}
           role-duration-seconds: 900
 
       - name: Stop agent sessions

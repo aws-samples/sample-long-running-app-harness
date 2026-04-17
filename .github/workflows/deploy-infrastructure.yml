@@ -86,9 +86,7 @@ jobs:
         if: steps.check.outputs.exists == 'true'
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          role-to-assume: ${{ secrets.AWS_INFRA_DEPLOY_ROLE_ARN }}
+          role-to-assume: ${{ vars.AWS_INFRA_DEPLOY_ROLE_ARN }}
           role-session-name: infra-deploy
           aws-region: ${{ env.AWS_REGION }}
           role-duration-seconds: 3600

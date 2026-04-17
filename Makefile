@@ -67,15 +67,24 @@ APP_STACK_NAME ?= $(PROJECT_NAME)-app-stack
 # GitHub configuration (set in Makefile.local)
 GITHUB_REPO ?=
 
-.PHONY: help create-runtime launch launch-local deploy-infra status destroy show-config update-runtime-env get-runtime cleanup-test stop-session reset
+# GitHub OIDC thumbprint for token.actions.githubusercontent.com.
+# AWS now resolves this automatically when the provider URL is set, so we pass
+# a placeholder that the IAM service ignores (see AWS docs: "you can provide
+# any value for the thumbprint"). See:
+# https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html
+GITHUB_OIDC_THUMBPRINT ?= ffffffffffffffffffffffffffffffffffffffff
+
+.PHONY: help create-runtime launch launch-local deploy-infra status destroy show-config update-runtime-env get-runtime cleanup-test stop-session reset setup-oidc print-oidc-setup
 
 help:
 	@echo "AgentCore Management Commands"
 	@echo ""
+	@echo "  make setup-oidc        - Register GitHub Actions OIDC provider (one-time per account)"
+	@echo "  make deploy-infra      - Deploy CDK infrastructure (creates GitHub OIDC roles)"
+	@echo "  make print-oidc-setup  - Print 'gh variable set' commands to wire ARNs into the repo"
 	@echo "  make create-runtime    - Create a new AgentCore runtime (first-time setup)"
 	@echo "  make update-runtime-env - Update env vars on existing runtime (AWS CLI)"
 	@echo "  make get-runtime       - Get current runtime configuration"
-	@echo "  make deploy-infra      - Deploy CDK infrastructure"
 	@echo "  make show-config       - Show current configuration values"
 	@echo "  make cleanup-test      - Clean up test issues, branches, and S3"
 	@echo "  make stop-session SESSION_ID=xxx - Stop a running agent session"
@@ -128,9 +137,49 @@ show-config:
 
 # Deploy CDK infrastructure
 deploy-infra:
+	@if [ -z "$(GITHUB_REPO)" ]; then \
+		echo "Error: GITHUB_REPO is required (owner/repo). Set it in Makefile.local."; \
+		exit 1; \
+	fi
 	cd infrastructure && AWS_PROFILE=$(AWS_PROFILE) npx cdk deploy --require-approval never \
 		-c vpcId=$(VPC_ID) \
-		-c agentCoreRoleName=$(AGENTCORE_ROLE_NAME)
+		-c agentCoreRoleName=$(AGENTCORE_ROLE_NAME) \
+		-c githubRepo=$(GITHUB_REPO)
+
+# Register the GitHub Actions OIDC provider in this AWS account (one-time,
+# idempotent). Run this ONCE per AWS account before 'make deploy-infra'.
+# See: https://aws.amazon.com/blogs/security/use-iam-roles-to-connect-github-actions-to-actions-in-aws/
+setup-oidc:
+	@echo "Registering GitHub Actions OIDC provider in account..."
+	@if aws iam get-open-id-connect-provider \
+		--open-id-connect-provider-arn \
+		"arn:aws:iam::$(AWS_ACCOUNT_ID):oidc-provider/token.actions.githubusercontent.com" \
+		--profile $(AWS_PROFILE) >/dev/null 2>&1; then \
+		echo "     Provider already exists (ok)"; \
+	else \
+		aws iam create-open-id-connect-provider \
+			--url https://token.actions.githubusercontent.com \
+			--client-id-list sts.amazonaws.com \
+			--thumbprint-list $(GITHUB_OIDC_THUMBPRINT) \
+			--profile $(AWS_PROFILE) \
+			&& echo "     Provider created"; \
+	fi
+	@echo ""
+	@echo "Next: run 'make deploy-infra GITHUB_REPO=owner/repo'"
+	@echo "Then:  'make print-oidc-setup' for the gh commands to populate repo variables."
+
+# Print the `gh variable set` commands to wire the deployed role ARNs into the
+# GitHub repo. Run AFTER 'make deploy-infra' has created the roles.
+print-oidc-setup:
+	@AGENTCORE_ARN=$$(aws cloudformation describe-stacks --stack-name $(STACK_NAME) --region $(CF_REGION) --profile $(AWS_PROFILE) --query "Stacks[0].Outputs[?OutputKey=='AgentCoreRoleArn' || OutputKey=='GitHubAgentCoreRoleArn'].OutputValue" --output text 2>/dev/null); \
+	PREVIEW_ARN=$$(aws cloudformation describe-stacks --stack-name $(STACK_NAME) --region $(CF_REGION) --profile $(AWS_PROFILE) --query "Stacks[0].Outputs[?OutputKey=='GitHubPreviewDeployRoleArn'].OutputValue" --output text 2>/dev/null); \
+	INFRA_ARN=$$(aws cloudformation describe-stacks --stack-name $(STACK_NAME) --region $(CF_REGION) --profile $(AWS_PROFILE) --query "Stacks[0].Outputs[?OutputKey=='GitHubInfraDeployRoleArn'].OutputValue" --output text 2>/dev/null); \
+	echo "# Run these to populate repo variables (NOT secrets - role ARNs aren't sensitive):"; \
+	echo "gh variable set AWS_REGION --repo $(GITHUB_REPO) --body $(CF_REGION)"; \
+	echo "gh variable set AWS_AGENTCORE_ROLE_ARN --repo $(GITHUB_REPO) --body $$AGENTCORE_ARN"; \
+	echo "gh variable set AWS_PREVIEW_DEPLOY_ROLE_ARN --repo $(GITHUB_REPO) --body $$PREVIEW_ARN"; \
+	echo "gh variable set AWS_INFRA_DEPLOY_ROLE_ARN --repo $(GITHUB_REPO) --body $$INFRA_ARN"; \
+	echo "gh variable set AGENTCORE_AGENT_ID --repo $(GITHUB_REPO) --body $(AGENT_RUNTIME_ID)"
 
 # Create a new AgentCore runtime (first-time setup, replaces broken 'agentcore launch')
 # After running, copy the agentRuntimeId from the output into Makefile.local as AGENT_RUNTIME_ID
