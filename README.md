@@ -1,4 +1,4 @@
-# Long-Horizon Coding Agent Demo
+# sample-long-running-app-harness
 
 An autonomous agent system that builds full-stack applications from GitHub issues using AWS Bedrock AgentCore and the Claude Agent SDK.
 
