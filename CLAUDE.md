@@ -40,9 +40,9 @@ Walk the user through these steps interactively, running commands and explaining
 4. **Wait for READY**: `make get-runtime` — poll until `"status": "READY"`
 5. **Reset state**: `make reset`
 6. **Create and trigger an issue**:
-   - `gh issue create --repo KBB99/riv2025-long-horizon-coding-agent-demo --title "[MVP] Canopy Build" --body "Build the Canopy app as specified in BUILD_PLAN.md."`
+   - `gh issue create --repo aws-samples/sample-long-running-app-harness --title "[MVP] Canopy Build" --body "Build the Canopy app as specified in BUILD_PLAN.md."`
    - Add rocket reaction to the new issue
-   - `gh workflow run "Agent Builder" --repo KBB99/riv2025-long-horizon-coding-agent-demo -f issue_number=<ISSUE_NUM>`
+   - `gh workflow run "Agent Builder" --repo aws-samples/sample-long-running-app-harness -f issue_number=<ISSUE_NUM>`
 7. **Show monitoring commands** from the "Monitoring the Agent" section below
 
 ---
@@ -129,7 +129,7 @@ The previous agent runs (issues #17, #22) showed the agent writing CDK infrastru
 | Execution role | `arn:aws:iam::669298908997:role/claude-code-agentcore-role` |
 | Model | `us.anthropic.claude-opus-4-6-v1` |
 | Region | `us-east-1` |
-| GitHub repo | `KBB99/riv2025-long-horizon-coding-agent-demo` |
+| GitHub repo | `aws-samples/sample-long-running-app-harness` |
 | Working branch | `kb/improved-harness` (harness code) |
 | Agent output branch | `agent-runtime` (generated app) |
 
@@ -152,17 +152,17 @@ make update-runtime-env
 make get-runtime  # check "status": "READY"
 
 # 5. Create a GitHub issue and trigger the agent
-gh issue create --repo KBB99/riv2025-long-horizon-coding-agent-demo \
+gh issue create --repo aws-samples/sample-long-running-app-harness \
   --title "[MVP] Canopy Build" \
   --body "Build the Canopy app as specified in BUILD_PLAN.md."
-gh api repos/KBB99/riv2025-long-horizon-coding-agent-demo/issues/ISSUE_NUM/reactions -f content=rocket
+gh api repos/aws-samples/sample-long-running-app-harness/issues/ISSUE_NUM/reactions -f content=rocket
 
 # 6. Trigger immediately (instead of waiting for 5-min poller)
-gh workflow run "Agent Builder" --repo KBB99/riv2025-long-horizon-coding-agent-demo -f issue_number=ISSUE_NUM
+gh workflow run "Agent Builder" --repo aws-samples/sample-long-running-app-harness -f issue_number=ISSUE_NUM
 
 # 7. Monitor
-gh run list --repo KBB99/riv2025-long-horizon-coding-agent-demo --workflow "Agent Builder" --limit 3
-gh api repos/KBB99/riv2025-long-horizon-coding-agent-demo/issues/ISSUE_NUM/comments --jq '.[].body[:200]'
+gh run list --repo aws-samples/sample-long-running-app-harness --workflow "Agent Builder" --limit 3
+gh api repos/aws-samples/sample-long-running-app-harness/issues/ISSUE_NUM/comments --jq '.[].body[:200]'
 ```
 
 ### Monitoring the Agent
@@ -184,7 +184,7 @@ for evt in data.get('events', []):
 "
 
 # Check for commits on agent-runtime
-gh api "repos/KBB99/riv2025-long-horizon-coding-agent-demo/commits?sha=agent-runtime&per_page=5" \
+gh api "repos/aws-samples/sample-long-running-app-harness/commits?sha=agent-runtime&per_page=5" \
   --jq '.[] | .sha[:8] + " " + .commit.author.date + " " + (.commit.message | split("\n")[0])'
 
 # Stop a running session
