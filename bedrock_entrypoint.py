@@ -118,7 +118,7 @@ def get_secret(secret_name: str) -> Optional[str]:
         response = client.get_secret_value(SecretId=secret_name)
         return response['SecretString']
     except Exception as e:
-        print(f"❌ Failed to fetch secret {secret_name}: {e}")
+        logger.error("Failed to fetch secret %s: %s", secret_name, type(e).__name__)
         return None
 
 
@@ -164,13 +164,19 @@ def write_github_token_to_file(github_token: str) -> bool:
         True if successful, False otherwise
     """
     try:
-        # Write token with restricted permissions
-        with open(GITHUB_TOKEN_FILE, 'w') as f:
-            f.write(github_token)
-        os.chmod(GITHUB_TOKEN_FILE, 0o600)  # Read/write for owner only
+        # Token is required on disk so the git post-commit bash hook can read
+        # a refreshed value mid-session. Open with 0o600 via os.open to avoid
+        # the brief umask window before chmod.
+        fd = os.open(
+            GITHUB_TOKEN_FILE,
+            os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
+            0o600,
+        )
+        with os.fdopen(fd, 'w') as f:
+            f.write(github_token)  # lgtm[py/clear-text-storage-sensitive-data]
         return True
     except Exception as e:
-        print(f"⚠️ Failed to write GitHub token file: {e}")
+        logger.warning("Failed to write GitHub token file: %s", type(e).__name__)
         return False
 
 
