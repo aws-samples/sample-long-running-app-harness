@@ -200,7 +200,7 @@ export default function IssueDetailPanel() {
                   <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">Story Points</span>
                   <div className="mt-1 text-sm">
                     {issue.storyPoints ? (
-                      <span className="inline-block px-2 py-0.5 bg-forest-100 text-forest-700 rounded font-medium">{issue.storyPoints}</span>
+                      <span className="inline-block px-2 py-0.5 bg-forest-700/15 text-forest-700 rounded font-medium">{issue.storyPoints}</span>
                     ) : (
                       <span className="text-text-tertiary">None</span>
                     )}
@@ -252,7 +252,7 @@ export default function IssueDetailPanel() {
                   <h3 className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider mb-2">Labels</h3>
                   <div className="flex gap-1.5 flex-wrap">
                     {issue.labels.map(label => (
-                      <span key={label} className="px-2 py-0.5 text-xs rounded-full bg-forest-100 text-forest-700">{label}</span>
+                      <span key={label} className="px-2 py-0.5 text-xs rounded-full bg-forest-700/15 text-forest-700">{label}</span>
                     ))}
                   </div>
                 </div>

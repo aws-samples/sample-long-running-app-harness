@@ -211,7 +211,7 @@ function BoardColumn({
       <div
         ref={setNodeRef}
         className={`flex-1 bg-page-bg rounded-lg p-2 space-y-2 min-h-[200px] transition-colors ${
-          isOver ? 'bg-amber-100/30 ring-2 ring-amber-400/30' : ''
+          isOver ? 'bg-selected-bg ring-2 ring-amber-400/40' : ''
         }`}
       >
         <SortableContext items={issues.map(i => i.id)} strategy={verticalListSortingStrategy}>
@@ -262,7 +262,7 @@ function IssueCard({ issue, isDragging, onClick }: { issue: Issue; isDragging?: 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           {issue.storyPoints && (
-            <span className="text-[10px] px-1.5 py-0.5 bg-forest-100 text-forest-700 rounded font-medium">
+            <span className="text-[10px] px-1.5 py-0.5 bg-forest-700/15 text-forest-700 rounded font-medium">
               {issue.storyPoints} SP
             </span>
           )}

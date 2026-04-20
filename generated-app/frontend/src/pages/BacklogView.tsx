@@ -279,7 +279,7 @@ function IssueRow({
       <span className="text-xs font-mono text-text-tertiary shrink-0 w-16">{issue.key}</span>
       <span className="text-sm flex-1 truncate">{issue.summary}</span>
       {issue.storyPoints && (
-        <span className="text-[10px] px-1.5 py-0.5 bg-forest-100 text-forest-700 rounded font-medium shrink-0">{issue.storyPoints}</span>
+        <span className="text-[10px] px-1.5 py-0.5 bg-forest-700/15 text-forest-700 rounded font-medium shrink-0">{issue.storyPoints}</span>
       )}
       <span
         className="text-xs shrink-0"
