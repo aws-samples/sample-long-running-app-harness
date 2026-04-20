@@ -368,9 +368,17 @@ export default function IssueDetailPanel() {
                 {/* Child issues section (for Epics) */}
                 {issue.type === 'Epic' && (
                   <div className="mb-6">
-                    <h3 className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider mb-2">
-                      Child Issues ({childIssues.length})
-                    </h3>
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">
+                        Child Issues ({childIssues.length})
+                      </h3>
+                      {childIssues.length > 0 && (
+                        <span className="text-[10px] text-forest-700 bg-forest-700/10 px-1.5 py-0.5 rounded font-medium">
+                          {childIssues.filter(i => i.status === 'done').reduce((s, i) => s + (i.storyPoints || 0), 0)}/
+                          {childIssues.reduce((s, i) => s + (i.storyPoints || 0), 0)} SP
+                        </span>
+                      )}
+                    </div>
                     {childIssues.length > 0 && (
                       <div className="mb-2">
                         <div className="flex items-center gap-2 mb-1.5">
@@ -396,7 +404,10 @@ export default function IssueDetailPanel() {
                           <span style={{ color: ISSUE_TYPE_COLORS[child.type] }}>{TYPE_ICONS[child.type]}</span>
                           <span className="text-xs font-mono text-text-tertiary">{child.key}</span>
                           <span className={`flex-1 truncate ${child.status === 'done' ? 'line-through text-text-tertiary' : ''}`}>{child.summary}</span>
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${STATUS_COLORS[child.status] || 'bg-page-bg text-text-tertiary'}`}>
+                          {child.storyPoints != null && child.storyPoints > 0 && (
+                            <span className="text-[9px] px-1 py-0.5 bg-forest-700/10 text-forest-700 rounded-full font-medium shrink-0">{child.storyPoints}</span>
+                          )}
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full shrink-0 ${STATUS_COLORS[child.status] || 'bg-page-bg text-text-tertiary'}`}>
                             {STATUS_LABELS[child.status] || child.status}
                           </span>
                         </button>
