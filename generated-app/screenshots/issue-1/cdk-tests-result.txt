@@ -1,6 +1,6 @@
 VERIFIED_BY: backend-verify.cjs
-TIMESTAMP: 2026-04-20T16:21:12.500Z
-COMMAND: cd infrastructure && npm test 2>&1
+TIMESTAMP: 2026-04-20T16:36:54.310Z
+COMMAND: cd /app/workspace/agent-runtime/generated-app/infrastructure && npm test 2>&1
 EXIT_CODE: 0
 RESULT: PASS
 
@@ -11,10 +11,10 @@ RESULT: PASS
 
 Bundling asset TestStack/CanopyApiHandler/Code/Stage...
 
-  ...bdc53b2291e799140e2a608f829fd18cddee7b29e755f2-building/index.js   73.1kb
-  ...3b2291e799140e2a608f829fd18cddee7b29e755f2-building/index.js.map  283.9kb
+  ...7a62a7a4751f7743ea0f234c75bf11800402fd80271372-building/index.js   73.1kb
+  ...a7a4751f7743ea0f234c75bf11800402fd80271372-building/index.js.map  283.9kb
 
-⚡ Done in 17ms
+⚡ Done in 16ms
   console.warn
     [WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin is deprecated.
       Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
@@ -54,35 +54,35 @@ Bundling asset TestStack/CanopyApiHandler/Code/Stage...
       at new CanopyStack (lib/canopy-stack.ts:128:26)
       at Object.<anonymous> (test/canopy-stack.test.ts:10:19)
 
-PASS test/canopy-stack.test.ts (9.422 s)
+PASS test/canopy-stack.test.ts (8.977 s)
   CanopyStack
     ✓ matches snapshot (6 ms)
     DynamoDB
       ✓ creates a DynamoDB table with correct key schema (6 ms)
       ✓ DynamoDB table has three GSIs (2 ms)
-      ✓ DynamoDB table has point-in-time recovery enabled
+      ✓ DynamoDB table has point-in-time recovery enabled (1 ms)
     Lambda
       ✓ creates a Lambda function with Node.js 20 runtime (2 ms)
       ✓ Lambda has TABLE_NAME environment variable (1 ms)
     API Gateway
-      ✓ creates an HTTP API
+      ✓ creates an HTTP API (1 ms)
       ✓ API Gateway has CORS configured (1 ms)
     S3 and CloudFront
-      ✓ creates an S3 bucket for frontend (1 ms)
-      ✓ creates a CloudFront distribution (1 ms)
+      ✓ creates an S3 bucket for frontend
+      ✓ creates a CloudFront distribution
       ✓ CloudFront has SPA routing error responses (1 ms)
     IAM
       ✓ Lambda has DynamoDB read/write policy (1 ms)
     Stack Outputs
       ✓ exports ApiUrl (1 ms)
       ✓ exports FrontendBucketName
-      ✓ exports DistributionId (1 ms)
-      ✓ exports DistributionDomain
+      ✓ exports DistributionId
+      ✓ exports DistributionDomain (1 ms)
 
 Test Suites: 1 passed, 1 total
 Tests:       16 passed, 16 total
 Snapshots:   1 passed, 1 total
-Time:        9.674 s, estimated 16 s
+Time:        9.216 s, estimated 10 s
 Ran all test suites.
 
 --- STDERR ---

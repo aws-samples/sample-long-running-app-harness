@@ -1,6 +1,6 @@
 VERIFIED_BY: backend-verify.cjs
-TIMESTAMP: 2026-04-20T16:21:05.275Z
-COMMAND: cd shared && npx tsc --noEmit
+TIMESTAMP: 2026-04-20T16:36:51.035Z
+COMMAND: cd /app/workspace/agent-runtime/generated-app/shared && npx tsc --noEmit
 EXIT_CODE: 0
 RESULT: PASS
 
