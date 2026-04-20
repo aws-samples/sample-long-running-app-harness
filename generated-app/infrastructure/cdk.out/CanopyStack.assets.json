@@ -1,0 +1,51 @@
+{
+  "version": "53.0.0",
+  "files": {
+    "d3859b9926f4d39b585e67e130895b379f2a8f6b801cb96b99c0f19304ddc16b": {
+      "displayName": "CanopyApiHandler/Code",
+      "source": {
+        "path": "asset.d3859b9926f4d39b585e67e130895b379f2a8f6b801cb96b99c0f19304ddc16b",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "current_account-us-east-1-efe915b4": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1",
+          "objectKey": "d3859b9926f4d39b585e67e130895b379f2a8f6b801cb96b99c0f19304ddc16b.zip",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-us-east-1"
+        }
+      }
+    },
+    "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6": {
+      "displayName": "CanopyStack/Custom::S3AutoDeleteObjectsCustomResourceProvider Code",
+      "source": {
+        "path": "asset.faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "current_account-us-east-1-e650c2de": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1",
+          "objectKey": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-us-east-1"
+        }
+      }
+    },
+    "c0b8ea534b7201edb9b63736d0a45f702a29bcf9b7c5a1c162e057717498931c": {
+      "displayName": "CanopyStack Template",
+      "source": {
+        "path": "CanopyStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-us-east-1-6b3caa94": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1",
+          "objectKey": "c0b8ea534b7201edb9b63736d0a45f702a29bcf9b7c5a1c162e057717498931c.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

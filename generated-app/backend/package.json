@@ -1,0 +1,19 @@
+{
+  "name": "@canopy/backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@canopy/shared": "*",
+    "@aws-sdk/client-dynamodb": "^3.700.0",
+    "@aws-sdk/lib-dynamodb": "^3.700.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "~5.8.3",
+    "@types/aws-lambda": "^8.10.145"
+  }
+}

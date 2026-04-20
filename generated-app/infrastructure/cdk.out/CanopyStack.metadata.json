@@ -1,0 +1,208 @@
+{
+  "/CanopyStack/CanopyTable": [
+    {
+      "type": "aws:cdk:hasPhysicalName",
+      "data": {
+        "Ref": "CanopyTable8B388EA1"
+      }
+    }
+  ],
+  "/CanopyStack/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+      "data": true
+    }
+  ],
+  "/CanopyStack/ApiUrl": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiUrl"
+    }
+  ],
+  "/CanopyStack/FrontendBucketName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "FrontendBucketName"
+    }
+  ],
+  "/CanopyStack/DistributionId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DistributionId"
+    }
+  ],
+  "/CanopyStack/DistributionDomain": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DistributionDomain"
+    }
+  ],
+  "/CanopyStack/TableName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TableName"
+    }
+  ],
+  "/CanopyStack/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    }
+  ],
+  "/CanopyStack/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    }
+  ],
+  "/CanopyStack/CanopyTable/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyTable8B388EA1"
+    }
+  ],
+  "/CanopyStack/CanopyApiHandler/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyApiHandler732CFD88"
+    }
+  ],
+  "/CanopyStack/CanopyHttpApi/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyHttpApiF2651D74"
+    }
+  ],
+  "/CanopyStack/CanopyFrontendBucket/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyFrontendBucket7E29486D"
+    },
+    {
+      "type": "aws:cdk:analytics:mixin",
+      "data": {
+        "mixin": "aws-cdk-lib.aws_s3.mixins.BucketAutoDeleteObjects"
+      }
+    }
+  ],
+  "/CanopyStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+    }
+  ],
+  "/CanopyStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+    }
+  ],
+  "/CanopyStack/CanopyOAI/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyOAICD34141D"
+    }
+  ],
+  "/CanopyStack/CanopyDistribution/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyDistributionC5D57BD9"
+    }
+  ],
+  "/CanopyStack/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    }
+  ],
+  "/CanopyStack/CanopyApiHandler/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyApiHandlerServiceRole90B2CE2A"
+    }
+  ],
+  "/CanopyStack/CanopyHttpApi/DefaultStage/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyHttpApiDefaultStageD1965B38"
+    }
+  ],
+  "/CanopyStack/CanopyHttpApi/GET--{proxy+}/CanopyLambdaIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyHttpApiGETproxyCanopyLambdaIntegrationPermission7C80EDDD"
+    }
+  ],
+  "/CanopyStack/CanopyHttpApi/GET--{proxy+}/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyHttpApiGETproxy6637D07A"
+    }
+  ],
+  "/CanopyStack/CanopyHttpApi/POST--{proxy+}/CanopyLambdaIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyHttpApiPOSTproxyCanopyLambdaIntegrationPermissionE1C6D0F7"
+    }
+  ],
+  "/CanopyStack/CanopyHttpApi/POST--{proxy+}/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyHttpApiPOSTproxy02092E2C"
+    }
+  ],
+  "/CanopyStack/CanopyHttpApi/PUT--{proxy+}/CanopyLambdaIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyHttpApiPUTproxyCanopyLambdaIntegrationPermissionBEBEB6A6"
+    }
+  ],
+  "/CanopyStack/CanopyHttpApi/PUT--{proxy+}/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyHttpApiPUTproxy626D5E94"
+    }
+  ],
+  "/CanopyStack/CanopyHttpApi/DELETE--{proxy+}/CanopyLambdaIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyHttpApiDELETEproxyCanopyLambdaIntegrationPermissionCE831C6E"
+    }
+  ],
+  "/CanopyStack/CanopyHttpApi/DELETE--{proxy+}/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyHttpApiDELETEproxyA7EA84CB"
+    }
+  ],
+  "/CanopyStack/CanopyFrontendBucket/Policy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyFrontendBucketPolicy68ACF7AE"
+    },
+    {
+      "type": "aws:cdk:analytics:mixin",
+      "data": {
+        "mixin": "aws-cdk-lib.aws_s3.mixins.BucketPolicyStatements"
+      }
+    }
+  ],
+  "/CanopyStack/CanopyFrontendBucket/AutoDeleteObjectsCustomResource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyFrontendBucketAutoDeleteObjectsCustomResource3BD3831B"
+    }
+  ],
+  "/CanopyStack/CanopyApiHandler/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyApiHandlerServiceRoleDefaultPolicy95A21DE2"
+    }
+  ],
+  "/CanopyStack/CanopyHttpApi/GET--{proxy+}/CanopyLambdaIntegration/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CanopyHttpApiGETproxyCanopyLambdaIntegration01C2E1EF"
+    }
+  ]
+}
