@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useIssues, useBoard, useUpdateIssue, useProject, useSprints } from '../hooks/useApi';
+import { useIssues, useBoard, useUpdateIssue, useProject, useSprints, useCreateIssue } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
 import { ISSUE_TYPE_COLORS, PRIORITY_COLORS, PRIORITY_ICONS } from '../lib/utils';
 import {
@@ -54,6 +54,7 @@ export default function BoardView() {
   const { data: board } = useBoard(projectId);
   const { data: sprints } = useSprints(projectId);
   const updateIssue = useUpdateIssue();
+  const createIssue = useCreateIssue();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [quickFilter, setQuickFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState<FilterType>('all');
@@ -285,6 +286,8 @@ export default function BoardView() {
                 onIssueClick={(id) => dispatch({ type: 'SELECT_ISSUE', id })}
                 onCreateIssue={() => dispatch({ type: 'SET_CREATE_ISSUE', show: true })}
                 animDelay={idx * 50}
+                projectId={projectId}
+                createIssue={createIssue}
               />
             );
           })}
@@ -299,14 +302,39 @@ export default function BoardView() {
 }
 
 function BoardColumn({
-  id, name, color, issues, wipLimit, onIssueClick, onCreateIssue, animDelay
+  id, name, color, issues, wipLimit, onIssueClick, onCreateIssue, animDelay, projectId, createIssue
 }: {
   id: string; name: string; color?: string; issues: Issue[]; wipLimit?: number;
   onIssueClick: (id: string) => void; onCreateIssue: () => void; animDelay: number;
+  projectId?: string; createIssue?: any;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   const overLimit = wipLimit && issues.length > wipLimit;
   const totalPoints = issues.reduce((s, i) => s + (i.storyPoints || 0), 0);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [quickAddText, setQuickAddText] = useState('');
+
+  async function handleQuickAdd() {
+    if (!quickAddText.trim() || !projectId || !createIssue) return;
+    try {
+      await createIssue.mutateAsync({
+        projectId,
+        data: {
+          type: 'Task' as const,
+          summary: quickAddText.trim(),
+          priority: 'Medium' as const,
+          status: id,
+          labels: [],
+          components: [],
+        },
+      });
+      setQuickAddText('');
+      setShowQuickAdd(false);
+      toast.success('Issue created');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to create issue');
+    }
+  }
 
   return (
     <div className="w-[280px] shrink-0 flex flex-col animate-slide-up" style={{ animationDelay: `${animDelay}ms` }}>
@@ -328,9 +356,9 @@ function BoardColumn({
           )}
         </div>
         <button
-          onClick={onCreateIssue}
+          onClick={() => setShowQuickAdd(true)}
           className="p-1 rounded hover:bg-hover-bg transition-colors text-text-tertiary hover:text-text-primary"
-          title="Create issue"
+          title="Quick add issue"
         >
           <Plus size={14} />
         </button>
@@ -344,15 +372,51 @@ function BoardColumn({
         }`}
       >
         <SortableContext items={issues.map(i => i.id)} strategy={verticalListSortingStrategy}>
-          {issues.map((issue, idx) => (
+          {issues.map((issue) => (
             <SortableIssueCard key={issue.id} issue={issue} onClick={() => onIssueClick(issue.id)} />
           ))}
         </SortableContext>
 
-        {issues.length === 0 && !isOver && (
+        {issues.length === 0 && !isOver && !showQuickAdd && (
           <div className="text-xs text-text-tertiary text-center py-8 opacity-60">
             <p>No issues</p>
             <p className="mt-1">Drag issues here</p>
+          </div>
+        )}
+
+        {/* Quick add inline */}
+        {showQuickAdd && (
+          <div className="bg-card-bg rounded-lg p-2.5 border border-amber-400/50 animate-scale-in">
+            <textarea
+              value={quickAddText}
+              onChange={e => setQuickAddText(e.target.value)}
+              placeholder="What needs to be done?"
+              rows={2}
+              className="w-full text-sm border-0 bg-transparent resize-none focus:outline-none placeholder:text-text-tertiary"
+              autoFocus
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleQuickAdd(); }
+                if (e.key === 'Escape') { setShowQuickAdd(false); setQuickAddText(''); }
+              }}
+            />
+            <div className="flex items-center justify-between mt-1.5">
+              <span className="text-[9px] text-text-tertiary">Enter to create · Esc to cancel</span>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => { setShowQuickAdd(false); setQuickAddText(''); }}
+                  className="text-[10px] px-2 py-1 text-text-tertiary hover:bg-hover-bg rounded transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleQuickAdd}
+                  disabled={!quickAddText.trim()}
+                  className="text-[10px] px-2 py-1 bg-amber-500 text-white rounded hover:bg-amber-600 transition-colors disabled:opacity-40 font-medium"
+                >
+                  Create
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
