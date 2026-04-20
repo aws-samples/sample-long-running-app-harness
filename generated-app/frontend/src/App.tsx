@@ -10,6 +10,8 @@ import ReportsView from './pages/ReportsView';
 import SettingsView from './pages/SettingsView';
 import RoadmapView from './pages/RoadmapView';
 import SprintsView from './pages/SprintsView';
+import LabelsView from './pages/LabelsView';
+import ComponentsView from './pages/ComponentsView';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient({
@@ -37,8 +39,8 @@ export default function App() {
               <Route path="project/:projectId/sprints" element={<SprintsView />} />
               <Route path="project/:projectId/reports" element={<ReportsView />} />
               <Route path="project/:projectId/settings" element={<SettingsView />} />
-              <Route path="project/:projectId/labels" element={<SettingsView />} />
-              <Route path="project/:projectId/components" element={<SettingsView />} />
+              <Route path="project/:projectId/labels" element={<LabelsView />} />
+              <Route path="project/:projectId/components" element={<ComponentsView />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
