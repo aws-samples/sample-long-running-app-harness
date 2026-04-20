@@ -38,7 +38,7 @@ test('search modal shows results', async ({ page }) => {
   await page.waitForLoadState('networkidle');
 
   // Open search
-  await page.locator('text=Search issues').click();
+  await page.locator('text=Search issues...').click();
   await page.waitForTimeout(300);
 
   // Type a search query

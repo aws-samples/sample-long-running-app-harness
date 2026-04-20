@@ -113,6 +113,8 @@ test.describe('Settings View', () => {
     await page.goto(`${BASE}/project/${PROJECT_ID}/settings`);
     await page.waitForLoadState('networkidle');
     await expect(page.locator('text=Danger Zone').first()).toBeVisible({ timeout: 10000 });
+    // Click the Danger Zone tab to reveal delete button
+    await page.locator('text=Danger Zone').first().click();
     await expect(page.locator('text=Delete Project').first()).toBeVisible({ timeout: 5000 });
   });
 });

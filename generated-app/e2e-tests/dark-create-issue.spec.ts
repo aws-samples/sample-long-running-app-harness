@@ -21,9 +21,9 @@ test('create issue modal in dark mode', async ({ page }) => {
   await page.screenshot({ path: 'screenshots/issue-1/dark-create-issue.png' });
 
   // Check the form elements are visible
-  await expect(page.locator('text=Summary')).toBeVisible();
-  await expect(page.locator('text=Priority')).toBeVisible();
-  await expect(page.locator('text=Type')).toBeVisible();
+  await expect(page.locator('text=Summary').first()).toBeVisible();
+  await expect(page.locator('text=Priority').first()).toBeVisible();
+  await expect(page.locator('label:has-text("Type")').first()).toBeVisible();
 });
 
 test('issue detail panel in dark mode', async ({ page }) => {

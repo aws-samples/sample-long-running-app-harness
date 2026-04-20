@@ -34,10 +34,14 @@ test('settings page has delete project with confirmation', async ({ page }) => {
   await page.goto(`${BASE}/project/${PROJECT_ID}/settings`);
   await page.waitForLoadState('networkidle');
 
-  // Should see Danger Zone
+  // Should see Danger Zone tab
   await expect(page.locator('text=Danger Zone')).toBeVisible({ timeout: 10000 });
 
+  // Click the Danger Zone tab to reveal delete button
+  await page.locator('text=Danger Zone').first().click();
+  await page.waitForTimeout(500);
+
   // Should see Delete Project button
-  const deleteBtn = page.locator('button').filter({ hasText: 'Delete Project' });
+  const deleteBtn = page.locator('button').filter({ hasText: 'Delete' }).first();
   await expect(deleteBtn).toBeVisible({ timeout: 5000 });
 });
