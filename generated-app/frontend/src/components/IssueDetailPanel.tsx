@@ -81,6 +81,21 @@ export default function IssueDetailPanel() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Panel keyboard shortcuts (M = assign to me)
+  useEffect(() => {
+    if (!state.selectedIssueId) return;
+    function handlePanelKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+      if (e.key === 'm' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        handleAssignToMe();
+      }
+    }
+    window.addEventListener('keydown', handlePanelKey);
+    return () => window.removeEventListener('keydown', handlePanelKey);
+  }, [state.selectedIssueId]);
+
   if (!state.selectedIssueId) return null;
 
   const assignedUser = issue?.assigneeId ? MOCK_USERS.find(u => u.id === issue.assigneeId) : null;
@@ -162,6 +177,16 @@ export default function IssueDetailPanel() {
       await updateIssue.mutateAsync({ id: issue.id, data: { assigneeId: userId || undefined } });
       setShowAssigneeDropdown(false);
       toast.success(userId ? 'Assignee updated' : 'Assignee removed');
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  }
+
+  async function handleAssignToMe() {
+    if (!issue) return;
+    try {
+      await updateIssue.mutateAsync({ id: issue.id, data: { assigneeId: CURRENT_USER.id } });
+      toast.success(`Assigned to ${CURRENT_USER.name}`);
     } catch (err: any) {
       toast.error(err.message);
     }
