@@ -211,3 +211,91 @@ h1, h2, h3, h4, h5, h6 {
 .page-transition {
   animation: fadeIn 0.15s ease-out, slideInUp 0.25s ease-out;
 }
+
+/* Enhanced button press feedback */
+.btn-press:active {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+/* Subtle gradient text for hero headings */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-forest-900), var(--color-forest-700));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .gradient-text {
+  background: linear-gradient(135deg, var(--color-forest-300), var(--color-forest-400));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Pulse animation for active sprint badge */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Progress bar fill animation */
+@keyframes progressFill {
+  from { width: 0; }
+}
+
+.animate-progress {
+  animation: progressFill 0.8s ease-out;
+}
+
+/* Card hover glow */
+.card-glow {
+  transition: box-shadow 0.3s ease;
+}
+
+.card-glow:hover {
+  box-shadow: 0 4px 20px rgba(64, 145, 108, 0.08);
+}
+
+.dark .card-glow:hover {
+  box-shadow: 0 4px 20px rgba(64, 145, 108, 0.12);
+}
+
+/* Tooltip arrow styles */
+.tooltip-arrow::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: var(--color-card-bg);
+  border-left: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border);
+}
+
+/* Extended stagger (9-12) */
+.stagger-children > *:nth-child(9) { animation-delay: 400ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 450ms; }
+.stagger-children > *:nth-child(11) { animation-delay: 500ms; }
+.stagger-children > *:nth-child(12) { animation-delay: 550ms; }
+
+/* Transition utilities */
+.transition-spring {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Selection color */
+::selection {
+  background: rgba(64, 145, 108, 0.2);
+  color: var(--color-text-primary);
+}
+
+.dark ::selection {
+  background: rgba(64, 145, 108, 0.3);
+}

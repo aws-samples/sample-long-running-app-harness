@@ -52,7 +52,7 @@ export default function Dashboard() {
             <TreePine size={22} className="text-forest-300" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-text-primary">Welcome to Canopy</h1>
+            <h1 className="font-display text-2xl font-bold gradient-text">Welcome to Canopy</h1>
             <p className="text-sm text-text-secondary">Manage your projects with clarity and focus</p>
           </div>
         </div>
@@ -156,7 +156,7 @@ export default function Dashboard() {
               <button
                 key={project.id}
                 onClick={() => selectProject(project.id)}
-                className="bg-card-bg rounded-lg border border-border p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group"
+                className="bg-card-bg rounded-lg border border-border p-5 text-left hover:-translate-y-0.5 transition-all group card-glow"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <span
@@ -235,7 +235,7 @@ function QuickAction({ icon, label, description, onClick }: {
   return (
     <button
       onClick={onClick}
-      className="bg-card-bg rounded-lg border border-border p-3 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group"
+      className="bg-card-bg rounded-lg border border-border p-3 text-left hover:shadow-md hover:-translate-y-0.5 transition-spring group btn-press"
     >
       <div className="flex items-center gap-2 mb-1">
         <div className="w-7 h-7 rounded-md bg-amber-500/10 text-amber-600 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
