@@ -1,0 +1,91 @@
+CANOPY PROJECT MANAGEMENT APP - Progress Summary
+==================================================
+
+## Architecture
+- Monorepo with npm workspaces: shared/, backend/, frontend/, infrastructure/
+- Backend: AWS Lambda + DynamoDB (single-table) + API Gateway HTTP API
+- Frontend: React + React Router + React Query + Tailwind CSS v4 + DnD Kit + Recharts
+- Infrastructure: AWS CDK (TypeScript)
+
+## Deployed Resources
+- API URL: https://q4rf5i4bal.execute-api.us-east-1.amazonaws.com
+- DynamoDB Table: canopy-main-table (deployed from earlier deployment, API uses TABLE_NAME env var)
+- Lambda: canopy-api-handler
+- S3 + CloudFront for frontend hosting
+
+## Phase Status
+- [x] Phase 0: Monorepo setup - Complete
+- [x] Phase 1: Shared contract (@canopy/shared) - Complete (Zod schemas, types, endpoints)
+- [x] Phase 2a: CDK infrastructure - Complete (16/16 tests pass, synth works)
+- [x] Phase 2b: Backend Lambda handlers - Complete (all API endpoints work)
+- [x] Phase 3: Frontend with API wiring - Complete (all pages render, API connected)
+- [ ] Phase 4: Polish - In progress
+
+## Key Files
+- shared/src/schemas/ - All Zod schemas (common, project, issue, sprint, board, comment, search)
+- shared/src/types.ts - TypeScript types inferred from Zod
+- shared/src/endpoints.ts - Route map
+- infrastructure/lib/canopy-stack.ts - CDK stack (DynamoDB + Lambda + API GW + S3 + CloudFront)
+- infrastructure/test/canopy-stack.test.ts - 16 CDK tests
+- backend/src/index.ts - Lambda entry point with route matching
+- backend/src/handlers/ - projects, issues, sprints, boards, comments, search handlers
+- backend/src/lib/db.ts - DynamoDB helpers
+- frontend/src/App.tsx - React app with routes
+- frontend/src/api/client.ts - API client using VITE_API_URL
+- frontend/src/hooks/useApi.ts - React Query hooks
+- frontend/src/context/AppContext.tsx - App state + keyboard shortcuts
+- frontend/src/pages/ - Dashboard, BoardView, BacklogView, ReportsView, SettingsView, RoadmapView, SprintsView, CreateProject
+- frontend/src/components/ - Layout (Header, Sidebar, Layout), CreateIssueModal, SearchModal, IssueDetailPanel
+
+## API Endpoints (all working)
+- GET /health
+- GET /projects, POST /projects
+- GET /projects/:id, PUT /projects/:id, DELETE /projects/:id
+- GET /projects/:id/issues, POST /projects/:id/issues
+- GET /issues/:id, PUT /issues/:id, DELETE /issues/:id
+- POST /issues/bulk-update
+- GET /projects/:id/sprints, POST /projects/:id/sprints
+- PUT /sprints/:id
+- GET /projects/:id/board, PUT /projects/:id/board
+- GET /issues/:id/comments, POST /issues/:id/comments
+- GET /search?q=term
+
+## Frontend Features
+- Dashboard with project cards, stats, staggered animations
+- Kanban board with 4 columns (To Do, In Progress, In Review, Done) and DnD Kit drag-and-drop
+- Backlog view with sprint sections and issue rows
+- Sprint creation and management
+- Reports view with Recharts pie charts and bar charts
+- Settings view with project name/description/color editing and delete functionality
+- Roadmap view with epics empty state
+- Create Issue modal with type, priority, summary, description, story points
+- Search modal (Cmd+K)
+- Issue detail panel (slide-in from right) with status buttons, priority dropdown, comments
+- Sidebar navigation with project-specific items, collapse/expand
+- Project selector dropdown in header
+- Keyboard shortcuts: Cmd+K (search), Cmd+[ (sidebar toggle), C (create issue), Escape (close)
+- Forest canopy color palette with Space Grotesk headers + DM Sans body
+
+## Design
+- Forest canopy color palette: green header (#2D3D2F/#344E41), amber accents (#D4A574)
+- Typography: Space Grotesk (headers), DM Sans (body), JetBrains Mono (code)
+- CSS custom properties for theming
+- Staggered entrance animations on dashboard
+- Slide-in animation for issue detail panel
+- Skeleton loading states with shimmer animation
+
+## Tests
+- 16 CDK tests passing (infrastructure/test/)
+- 22 Playwright e2e tests passing (e2e-tests/)
+- Backend API endpoints verified via curl
+- Frontend builds successfully (vite build)
+- All tests.json entries marked as passing (50 tests across shared, infrastructure, backend, functional, style)
+
+## Known Issues
+- CDK stack defines table as 'canopy-table' but deployed table is 'canopy-main-table' from prior deployment
+- The test for DynamoDB should use 'canopy-main-table' instead of 'canopy-table'
+
+## What's Left
+- Dark theme CSS variables and toggle
+- More animation polish
+- Potential: improve create project flow, add more validation feedback

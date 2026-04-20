@@ -1,0 +1,130 @@
+VERIFIED_BY: backend-verify.cjs
+TIMESTAMP: 2026-04-20T16:21:43.831Z
+COMMAND: aws dynamodb scan --table-name canopy-main-table --max-items 1 --region us-east-1
+EXIT_CODE: 0
+RESULT: PASS
+
+--- STDOUT ---
+{
+    "Items": [
+        {
+            "entityType": {
+                "S": "BOARD"
+            },
+            "SK": {
+                "S": "BOARD"
+            },
+            "PK": {
+                "S": "PROJ#411e733c-c843-4510-b323-c37614a27ca6"
+            },
+            "data": {
+                "M": {
+                    "createdAt": {
+                        "S": "2026-02-25T03:30:23.818Z"
+                    },
+                    "columns": {
+                        "L": [
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "To Do"
+                                    },
+                                    "id": {
+                                        "S": "abbe043d-2189-4af9-83a6-08d2e6e60301"
+                                    },
+                                    "statusCategory": {
+                                        "S": "todo"
+                                    },
+                                    "color": {
+                                        "S": "#8896A6"
+                                    },
+                                    "sortOrder": {
+                                        "N": "0"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "In Progress"
+                                    },
+                                    "id": {
+                                        "S": "e02f7696-ebb9-466d-b197-c8666fe6a491"
+                                    },
+                                    "statusCategory": {
+                                        "S": "in_progress"
+                                    },
+                                    "color": {
+                                        "S": "#2196F3"
+                                    },
+                                    "sortOrder": {
+                                        "N": "1"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "In Review"
+                                    },
+                                    "id": {
+                                        "S": "5a67e9cb-8fa1-4f9f-ae1c-6f7c5134b441"
+                                    },
+                                    "statusCategory": {
+                                        "S": "in_progress"
+                                    },
+                                    "color": {
+                                        "S": "#E9C46A"
+                                    },
+                                    "sortOrder": {
+                                        "N": "2"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "Done"
+                                    },
+                                    "id": {
+                                        "S": "379b936f-f19f-4ab3-9669-6b843daacf25"
+                                    },
+                                    "statusCategory": {
+                                        "S": "done"
+                                    },
+                                    "color": {
+                                        "S": "#40916C"
+                                    },
+                                    "sortOrder": {
+                                        "N": "3"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "name": {
+                        "S": "Board"
+                    },
+                    "id": {
+                        "S": "32290660-3b87-4d54-9c51-ef10b21b3df9"
+                    },
+                    "projectId": {
+                        "S": "411e733c-c843-4510-b323-c37614a27ca6"
+                    },
+                    "swimlaneBy": {
+                        "S": "none"
+                    },
+                    "updatedAt": {
+                        "S": "2026-02-25T03:30:23.818Z"
+                    }
+                }
+            }
+        }
+    ],
+    "Count": 102,
+    "ScannedCount": 102,
+    "ConsumedCapacity": null,
+    "NextToken": "eyJFeGNsdXNpdmVTdGFydEtleSI6IG51bGwsICJib3RvX3RydW5jYXRlX2Ftb3VudCI6IDF9"
+}
+
+--- STDERR ---

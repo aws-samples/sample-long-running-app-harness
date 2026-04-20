@@ -1,0 +1,29 @@
+VERIFIED_BY: backend-verify.cjs
+TIMESTAMP: 2026-04-20T16:21:08.544Z
+COMMAND: cd infrastructure && npx cdk synth 2>&1 | head -20
+EXIT_CODE: 0
+RESULT: PASS
+
+--- STDOUT ---
+Bundling asset CanopyStack/CanopyApiHandler/Code/Stage...
+
+  ...40c588fcda755211c5172df784a5eb36582c444a51bff0-building/index.js   73.1kb
+  ...88fcda755211c5172df784a5eb36582c444a51bff0-building/index.js.map  282.9kb
+
+⚡ Done in 18ms
+[WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin is deprecated.
+  Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
+  This API will be removed in the next major release.
+[WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin#bind is deprecated.
+  Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
+  This API will be removed in the next major release.
+Description: Canopy Project Management Application - Full Stack Serverless
+Resources:
+  CanopyTable8B388EA1:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+
+--- STDERR ---

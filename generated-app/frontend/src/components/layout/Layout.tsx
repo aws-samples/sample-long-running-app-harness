@@ -1,4 +1,5 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import CreateIssueModal from '../CreateIssueModal';
@@ -8,7 +9,16 @@ import { useApp } from '../../context/AppContext';
 import { Toaster } from 'sonner';
 
 export default function Layout() {
-  const { state } = useApp();
+  const { state, dispatch } = useApp();
+  const location = useLocation();
+
+  // Auto-detect project ID from URL path
+  useEffect(() => {
+    const match = location.pathname.match(/^\/project\/([^/]+)/);
+    if (match && match[1] !== state.currentProjectId) {
+      dispatch({ type: 'SET_PROJECT', id: match[1] });
+    }
+  }, [location.pathname, state.currentProjectId, dispatch]);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
