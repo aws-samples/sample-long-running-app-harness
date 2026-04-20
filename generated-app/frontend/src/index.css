@@ -129,6 +129,10 @@ h1, h2, h3, h4, h5, h6 {
   animation: scaleIn 0.2s ease-out;
 }
 
+.animate-slide-up {
+  animation: slideInUp 0.35s ease-out both;
+}
+
 .skeleton {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200px 100%;

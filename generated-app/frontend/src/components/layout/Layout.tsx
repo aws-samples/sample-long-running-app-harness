@@ -4,6 +4,7 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import CreateIssueModal from '../CreateIssueModal';
 import SearchModal from '../SearchModal';
+import KeyboardShortcutsModal from '../KeyboardShortcutsModal';
 import IssueDetailPanel from '../IssueDetailPanel';
 import { useApp } from '../../context/AppContext';
 import { Toaster } from 'sonner';
@@ -34,6 +35,7 @@ export default function Layout() {
       </div>
       {state.showCreateIssueModal && <CreateIssueModal />}
       {state.showSearchModal && <SearchModal />}
+      <KeyboardShortcutsModal />
       <Toaster position="top-right" richColors />
     </div>
   );

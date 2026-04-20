@@ -1,15 +1,15 @@
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useIssues, useBoard, useUpdateIssue, useProject } from '../hooks/useApi';
+import { useIssues, useBoard, useUpdateIssue, useProject, useSprints } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
-import { ISSUE_TYPE_COLORS, PRIORITY_COLORS } from '../lib/utils';
+import { ISSUE_TYPE_COLORS, PRIORITY_COLORS, PRIORITY_ICONS } from '../lib/utils';
 import {
   DndContext, closestCenter, type DragEndEvent, DragOverlay, type DragStartEvent,
   PointerSensor, useSensor, useSensors, useDroppable,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Bookmark, Bug, CheckSquare, Zap, ListTodo, Plus, Maximize2 } from 'lucide-react';
+import { Bookmark, Bug, CheckSquare, Zap, ListTodo, Plus, Filter, User } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Issue } from '@canopy/shared';
 
@@ -21,6 +21,14 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   'Sub-task': <ListTodo size={13} />,
 };
 
+const MOCK_USERS: Record<string, { name: string; initials: string; color: string }> = {
+  'user-1': { name: 'Alice Chen', initials: 'AC', color: '#1B4332' },
+  'user-2': { name: 'Bob Smith', initials: 'BS', color: '#2D6A4F' },
+  'user-3': { name: 'Carol Davis', initials: 'CD', color: '#52796F' },
+  'user-4': { name: 'Dan Wilson', initials: 'DW', color: '#D4A373' },
+  'user-5': { name: 'Eve Johnson', initials: 'EJ', color: '#BC6C25' },
+};
+
 const DEFAULT_COLUMNS = [
   { id: 'todo', name: 'To Do', statusCategory: 'todo' },
   { id: 'in_progress', name: 'In Progress', statusCategory: 'in_progress' },
@@ -28,17 +36,30 @@ const DEFAULT_COLUMNS = [
   { id: 'done', name: 'Done', statusCategory: 'done' },
 ];
 
+const COLUMN_COLORS: Record<string, string> = {
+  todo: '#8896A6',
+  in_progress: '#2196F3',
+  in_review: '#E9C46A',
+  done: '#40916C',
+};
+
+type FilterType = 'all' | 'Epic' | 'Story' | 'Bug' | 'Task';
+
 export default function BoardView() {
   const { projectId } = useParams<{ projectId: string }>();
   const { dispatch } = useApp();
   const { data: project } = useProject(projectId);
   const { data: issues, isLoading } = useIssues(projectId);
   const { data: board } = useBoard(projectId);
+  const { data: sprints } = useSprints(projectId);
   const updateIssue = useUpdateIssue();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [quickFilter, setQuickFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState<FilterType>('all');
+  const [showFilters, setShowFilters] = useState(false);
 
   const columns = board?.columns?.length ? board.columns : DEFAULT_COLUMNS;
+  const activeSprint = sprints?.find(s => s.status === 'active');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -51,23 +72,22 @@ export default function BoardView() {
       const q = quickFilter.toLowerCase();
       filtered = filtered.filter(i =>
         i.summary.toLowerCase().includes(q) ||
-        i.key?.toLowerCase().includes(q)
+        i.key?.toLowerCase().includes(q) ||
+        i.labels?.some(l => l.toLowerCase().includes(q))
       );
     }
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(i => i.type === typeFilter);
+    }
     return filtered;
-  }, [issues, quickFilter]);
+  }, [issues, quickFilter, typeFilter]);
 
   const issuesByStatus = useMemo(() => {
     const map: Record<string, Issue[]> = {};
     for (const col of columns) {
-      const statusId = col.statusCategory === 'todo' && col.name === 'To Do' ? 'todo' :
-                       col.statusCategory === 'in_progress' && col.name === 'In Progress' ? 'in_progress' :
-                       col.statusCategory === 'in_progress' && col.name === 'In Review' ? 'in_review' :
-                       col.statusCategory === 'done' ? 'done' :
-                       col.name.toLowerCase().replace(/\s+/g, '_');
+      const statusId = getStatusForColumn(col);
       map[statusId] = filteredIssues.filter(i => i.status === statusId);
     }
-    // Also catch any issues whose status doesn't match a column
     const allAssigned = new Set(Object.values(map).flat().map(i => i.id));
     const unmatched = filteredIssues.filter(i => !allAssigned.has(i.id));
     if (unmatched.length && map['todo']) {
@@ -94,7 +114,6 @@ export default function BoardView() {
     const issueId = active.id as string;
     const targetColumnId = over.id as string;
 
-    // Check if dropped on a column
     const targetCol = columns.find(c => getStatusForColumn(c) === targetColumnId);
     if (!targetCol) return;
 
@@ -103,7 +122,9 @@ export default function BoardView() {
     if (!issue || issue.status === newStatus) return;
 
     try {
-      await updateIssue.mutateAsync({ id: issueId, data: { status: newStatus } });
+      const resolvedAt = newStatus === 'done' ? new Date().toISOString() : undefined;
+      await updateIssue.mutateAsync({ id: issueId, data: { status: newStatus, resolvedAt } });
+      toast.success(`Moved to ${targetCol.name}`);
     } catch (err: any) {
       toast.error(err.message);
     }
@@ -119,11 +140,11 @@ export default function BoardView() {
         <div className="skeleton h-8 w-48 mb-6" />
         <div className="flex gap-4">
           {[1,2,3,4].map(i => (
-            <div key={i} className="w-72 shrink-0">
+            <div key={i} className="w-[280px] shrink-0">
               <div className="skeleton h-6 w-24 mb-3" />
               <div className="space-y-3">
-                <div className="skeleton h-24 w-full rounded-lg" />
-                <div className="skeleton h-24 w-full rounded-lg" />
+                <div className="skeleton h-28 w-full rounded-lg" />
+                <div className="skeleton h-28 w-full rounded-lg" />
               </div>
             </div>
           ))}
@@ -138,7 +159,14 @@ export default function BoardView() {
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="font-display text-xl font-bold">Board</h1>
-          {project && <p className="text-sm text-text-secondary">{project.name}</p>}
+          <div className="flex items-center gap-2 mt-0.5">
+            {project && <span className="text-sm text-text-secondary">{project.name}</span>}
+            {activeSprint && (
+              <span className="text-[10px] px-1.5 py-0.5 bg-info/10 text-info rounded font-medium">
+                {activeSprint.name}
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <input
@@ -148,19 +176,60 @@ export default function BoardView() {
             placeholder="Filter issues..."
             className="h-8 w-48 px-3 text-sm border border-border rounded-md focus:border-border-focus focus:outline-none"
           />
+          <div className="relative">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-1.5 h-8 px-3 text-sm border rounded-md transition-colors ${
+                typeFilter !== 'all' ? 'border-amber-400 bg-amber-50 text-amber-700' : 'border-border hover:bg-hover-bg'
+              }`}
+            >
+              <Filter size={14} /> Type
+            </button>
+            {showFilters && (
+              <div className="absolute right-0 top-full mt-1 w-36 bg-card-bg rounded-lg shadow-lg border border-border py-1 z-10 animate-slide-down">
+                {(['all', 'Epic', 'Story', 'Bug', 'Task'] as FilterType[]).map(t => (
+                  <button
+                    key={t}
+                    onClick={() => { setTypeFilter(t); setShowFilters(false); }}
+                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-hover-bg transition-colors flex items-center gap-2 ${
+                      typeFilter === t ? 'bg-selected-bg font-medium' : ''
+                    }`}
+                  >
+                    {t === 'all' ? 'All Types' : (
+                      <>
+                        <span style={{ color: ISSUE_TYPE_COLORS[t] }}>{TYPE_ICONS[t]}</span>
+                        {t}
+                      </>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             onClick={() => dispatch({ type: 'SET_CREATE_ISSUE', show: true })}
-            className="flex items-center gap-1.5 h-8 px-3 text-sm bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors"
+            className="flex items-center gap-1.5 h-8 px-3 text-sm bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors font-medium"
           >
             <Plus size={14} /> Create
           </button>
         </div>
       </div>
 
+      {/* Active filter indicator */}
+      {(quickFilter || typeFilter !== 'all') && (
+        <div className="flex items-center gap-2 mb-3 text-xs text-text-secondary">
+          <span>Showing {filteredIssues.length} of {issues?.length || 0} issues</span>
+          {typeFilter !== 'all' && (
+            <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">Type: {typeFilter}</span>
+          )}
+          <button onClick={() => { setQuickFilter(''); setTypeFilter('all'); }} className="text-amber-500 hover:underline">Clear filters</button>
+        </div>
+      )}
+
       {/* Board columns */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: 'calc(100vh - 220px)' }}>
-          {columns.map(col => {
+        <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: 'calc(100vh - 240px)' }}>
+          {columns.map((col, idx) => {
             const statusId = getStatusForColumn(col);
             const columnIssues = issuesByStatus[statusId] || [];
 
@@ -169,9 +238,12 @@ export default function BoardView() {
                 key={statusId}
                 id={statusId}
                 name={col.name}
+                color={COLUMN_COLORS[statusId]}
                 issues={columnIssues}
                 wipLimit={(col as any).wipLimit}
                 onIssueClick={(id) => dispatch({ type: 'SELECT_ISSUE', id })}
+                onCreateIssue={() => dispatch({ type: 'SET_CREATE_ISSUE', show: true })}
+                animDelay={idx * 50}
               />
             );
           })}
@@ -186,42 +258,57 @@ export default function BoardView() {
 }
 
 function BoardColumn({
-  id, name, issues, wipLimit, onIssueClick
+  id, name, color, issues, wipLimit, onIssueClick, onCreateIssue, animDelay
 }: {
-  id: string; name: string; issues: Issue[]; wipLimit?: number; onIssueClick: (id: string) => void;
+  id: string; name: string; color?: string; issues: Issue[]; wipLimit?: number;
+  onIssueClick: (id: string) => void; onCreateIssue: () => void; animDelay: number;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   const overLimit = wipLimit && issues.length > wipLimit;
 
   return (
-    <div className="w-72 shrink-0 flex flex-col">
+    <div className="w-[280px] shrink-0 flex flex-col animate-slide-up" style={{ animationDelay: `${animDelay}ms` }}>
       {/* Column header */}
       <div className="flex items-center justify-between mb-2 px-1">
         <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color || '#8896A6' }} />
           <span className="font-display text-sm font-semibold text-text-primary">{name}</span>
           <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${
-            overLimit ? 'bg-error/10 text-error font-bold' : 'bg-page-bg text-text-tertiary'
+            overLimit ? 'bg-error/10 text-error font-bold animate-pulse' : 'bg-page-bg text-text-tertiary'
           }`}>
             {issues.length}{wipLimit ? `/${wipLimit}` : ''}
           </span>
+          {overLimit && (
+            <span className="text-[9px] text-error font-medium">WIP exceeded</span>
+          )}
         </div>
+        <button
+          onClick={onCreateIssue}
+          className="p-1 rounded hover:bg-hover-bg transition-colors text-text-tertiary hover:text-text-primary"
+          title="Create issue"
+        >
+          <Plus size={14} />
+        </button>
       </div>
 
       {/* Column body */}
       <div
         ref={setNodeRef}
-        className={`flex-1 bg-page-bg rounded-lg p-2 space-y-2 min-h-[200px] transition-colors ${
-          isOver ? 'bg-selected-bg ring-2 ring-amber-400/40' : ''
+        className={`flex-1 bg-page-bg rounded-lg p-2 space-y-2 min-h-[200px] transition-all duration-200 ${
+          isOver ? 'bg-selected-bg ring-2 ring-amber-400/40 scale-[1.01]' : ''
         }`}
       >
         <SortableContext items={issues.map(i => i.id)} strategy={verticalListSortingStrategy}>
-          {issues.map(issue => (
+          {issues.map((issue, idx) => (
             <SortableIssueCard key={issue.id} issue={issue} onClick={() => onIssueClick(issue.id)} />
           ))}
         </SortableContext>
 
         {issues.length === 0 && !isOver && (
-          <div className="text-xs text-text-tertiary text-center py-8">No issues</div>
+          <div className="text-xs text-text-tertiary text-center py-8 opacity-60">
+            <p>No issues</p>
+            <p className="mt-1">Drag issues here</p>
+          </div>
         )}
       </div>
     </div>
@@ -234,7 +321,7 @@ function SortableIssueCard({ issue, onClick }: { issue: Issue; onClick: () => vo
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.4 : 1,
   };
 
   return (
@@ -245,37 +332,66 @@ function SortableIssueCard({ issue, onClick }: { issue: Issue; onClick: () => vo
 }
 
 function IssueCard({ issue, isDragging, onClick }: { issue: Issue; isDragging?: boolean; onClick?: () => void }) {
+  const assignee = issue.assigneeId ? MOCK_USERS[issue.assigneeId] : null;
+
   return (
     <div
       onClick={onClick}
       className={`bg-card-bg rounded-lg p-3 border border-border cursor-pointer transition-all ${
-        isDragging ? 'shadow-lg rotate-1 scale-[1.02]' : 'hover:shadow-md hover:-translate-y-0.5'
+        isDragging ? 'shadow-lg rotate-1 scale-[1.03]' : 'hover:shadow-md hover:-translate-y-0.5'
       }`}
     >
+      {/* Type + Key row */}
       <div className="flex items-center gap-1.5 mb-1.5">
         <span style={{ color: ISSUE_TYPE_COLORS[issue.type] }}>
           {TYPE_ICONS[issue.type]}
         </span>
         <span className="text-[11px] font-mono text-text-tertiary">{issue.key}</span>
+        <span className="flex-1" />
+        <span
+          className="text-[10px] px-1 py-0.5 rounded"
+          style={{
+            color: PRIORITY_COLORS[issue.priority] || '#8896A6',
+            backgroundColor: `${PRIORITY_COLORS[issue.priority] || '#8896A6'}15`
+          }}
+          title={issue.priority}
+        >
+          {PRIORITY_ICONS[issue.priority]}
+        </span>
       </div>
-      <p className="text-sm font-medium leading-snug line-clamp-2 mb-2">{issue.summary}</p>
+
+      {/* Summary */}
+      <p className="text-sm font-medium leading-snug line-clamp-2 mb-2.5">{issue.summary}</p>
+
+      {/* Bottom row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          {issue.storyPoints && (
+          {issue.storyPoints != null && issue.storyPoints > 0 && (
             <span className="text-[10px] px-1.5 py-0.5 bg-forest-700/15 text-forest-700 rounded font-medium">
               {issue.storyPoints} SP
             </span>
           )}
           {issue.labels?.slice(0, 2).map(label => (
-            <span key={label} className="text-[10px] px-1.5 py-0.5 bg-page-bg text-text-tertiary rounded">{label}</span>
+            <span key={label} className="text-[10px] px-1.5 py-0.5 bg-page-bg text-text-tertiary rounded truncate max-w-[60px]">{label}</span>
           ))}
+          {issue.labels && issue.labels.length > 2 && (
+            <span className="text-[10px] text-text-tertiary">+{issue.labels.length - 2}</span>
+          )}
         </div>
-        <div className="flex items-center gap-1">
-          <span
-            className="w-2 h-2 rounded-full"
-            style={{ backgroundColor: PRIORITY_COLORS[issue.priority] || '#8896A6' }}
-            title={issue.priority}
-          />
+        <div className="flex items-center gap-1.5">
+          {assignee ? (
+            <div
+              className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0"
+              style={{ backgroundColor: assignee.color }}
+              title={assignee.name}
+            >
+              {assignee.initials}
+            </div>
+          ) : (
+            <div className="w-6 h-6 rounded-full flex items-center justify-center bg-page-bg shrink-0" title="Unassigned">
+              <User size={11} className="text-text-tertiary" />
+            </div>
+          )}
         </div>
       </div>
     </div>

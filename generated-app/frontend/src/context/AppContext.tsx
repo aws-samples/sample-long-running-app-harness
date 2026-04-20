@@ -7,6 +7,7 @@ interface AppState {
   selectedIssueId: string | null;
   showCreateIssueModal: boolean;
   showSearchModal: boolean;
+  showShortcutsModal: boolean;
 }
 
 type AppAction =
@@ -18,7 +19,8 @@ type AppAction =
   | { type: 'TOGGLE_CREATE_ISSUE' }
   | { type: 'SET_CREATE_ISSUE'; show: boolean }
   | { type: 'TOGGLE_SEARCH' }
-  | { type: 'SET_SEARCH'; show: boolean };
+  | { type: 'SET_SEARCH'; show: boolean }
+  | { type: 'SET_SHORTCUTS_MODAL'; show: boolean };
 
 const initialState: AppState = {
   currentProjectId: localStorage.getItem('canopy_currentProject') || null,
@@ -27,6 +29,7 @@ const initialState: AppState = {
   selectedIssueId: null,
   showCreateIssueModal: false,
   showSearchModal: false,
+  showShortcutsModal: false,
 };
 
 function reducer(state: AppState, action: AppAction): AppState {
@@ -56,6 +59,8 @@ function reducer(state: AppState, action: AppAction): AppState {
       return { ...state, showSearchModal: !state.showSearchModal };
     case 'SET_SEARCH':
       return { ...state, showSearchModal: action.show };
+    case 'SET_SHORTCUTS_MODAL':
+      return { ...state, showShortcutsModal: action.show };
     default:
       return state;
   }
@@ -74,11 +79,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Keyboard shortcuts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      // Escape always works
+      // Escape closes in priority order
       if (e.key === 'Escape') {
-        dispatch({ type: 'SELECT_ISSUE', id: null });
-        dispatch({ type: 'SET_CREATE_ISSUE', show: false });
-        dispatch({ type: 'SET_SEARCH', show: false });
+        if (state.showShortcutsModal) {
+          dispatch({ type: 'SET_SHORTCUTS_MODAL', show: false });
+          return;
+        }
+        if (state.showSearchModal) {
+          dispatch({ type: 'SET_SEARCH', show: false });
+          return;
+        }
+        if (state.showCreateIssueModal) {
+          dispatch({ type: 'SET_CREATE_ISSUE', show: false });
+          return;
+        }
+        if (state.selectedIssueId) {
+          dispatch({ type: 'SELECT_ISSUE', id: null });
+          return;
+        }
         return;
       }
 
@@ -97,11 +115,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (e.key === 'c' && !e.metaKey && !e.ctrlKey) {
         dispatch({ type: 'SET_CREATE_ISSUE', show: true });
       }
+      if (e.key === '?' && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
+        dispatch({ type: 'SET_SHORTCUTS_MODAL', show: true });
+      }
+      if (e.key === '/' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        const filterInput = document.querySelector('input[placeholder*="Filter"]') as HTMLInputElement;
+        if (filterInput) filterInput.focus();
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [state.showShortcutsModal, state.showSearchModal, state.showCreateIssueModal, state.selectedIssueId]);
 
   return <AppContext.Provider value={{ state, dispatch }}>{children}</AppContext.Provider>;
 }
