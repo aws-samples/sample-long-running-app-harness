@@ -1,9 +1,9 @@
 CANOPY PROJECT MANAGEMENT APP - PROGRESS UPDATE
 =================================================
-Last Updated: 2026-04-20 (Session 4 - Final - All Polish Complete)
+Last Updated: 2026-04-20 (Session 5 - UI Polish & Dark Mode)
 
-## STATUS: ALL PHASES COMPLETE + MAJOR UI POLISH
-All 4 phases are complete. All phase gates pass. 43 e2e tests pass. 16 CDK tests pass.
+## STATUS: ALL PHASES COMPLETE + ALL POLISH COMPLETE
+All 4 phases are complete. All phase gates pass. 51 e2e tests pass. 16 CDK tests pass.
 
 ## API URL
 https://q4rf5i4bal.execute-api.us-east-1.amazonaws.com
@@ -23,108 +23,79 @@ VITE_API_URL=https://q4rf5i4bal.execute-api.us-east-1.amazonaws.com (set in fron
 2. infrastructure/ synths: `cd infrastructure && npx cdk synth` ✅
 3. infrastructure/ tests: 16/16 pass (`cd infrastructure && npm test`) ✅
 4. frontend/ TypeScript: `cd frontend && npx tsc --noEmit` ✅
-5. frontend/ builds: `npm run build` ✅
+5. frontend/ builds: `npm run build` ✅ (~274KB gzipped)
 6. API endpoints respond: `curl -s $API_URL/projects` returns JSON ✅
-7. 43/43 e2e tests pass: `npx playwright test e2e-tests/` ✅
+7. 51/51 e2e tests pass: `npx playwright test e2e-tests/` ✅
 
-## CI/CD STATUS
-- Infrastructure deployed via prior CI/CD run
-- Latest runs fail on CloudFormation changeset validation (resources already exist with explicit names)
-- The actual infrastructure (Lambda, DynamoDB, API GW) is fully operational
-- CDK snapshot test normalized to handle S3Key hash differences across environments
+## SESSION 5 CHANGES (UI Polish & Dark Mode)
 
-## SESSION 4 CHANGES (Further Enhancement & CRUD)
+### Issue Detail Panel - Delete Confirmation Dialog
+- Replaced direct `handleDelete()` call with in-page confirmation dialog
+- Shows overlay with backdrop blur, styled modal with issue key and summary
+- Matches app theme with error-colored accent, cancel/confirm buttons
+- No browser-native confirm() calls anywhere in the codebase
 
-### Board View (BoardView.tsx) - Enhanced
-- Added priority filter dropdown (in addition to type filter)
-- Story point totals per column header
-- Enhanced issue cards with due date display (overdue/soon indicators)
-- Label pills on cards with forest-green styling
-- Better priority badge (pill shape with background)
-- Inline quick-add feature: click + on any column, type summary, Enter to create
-- Issues created inline get the column's status automatically
+### Create Issue Modal - Enhanced
+- Added Assignee dropdown (MOCK_USERS)
+- Added Due Date input field
+- maxLength={255} on summary input
+- Platform-aware Ctrl/⌘ shortcut tip
 
-### Backlog View (BacklogView.tsx) - Enhanced
-- Added status badge pills (To Do/In Progress/In Review/Done) with colored backgrounds
-- Added assignee avatar display on each row
-- Better story points styling (rounded-full)
+### Project Icons - Lucide React
+- Replaced all emoji-based icons with Lucide React SVG components
+- 12 icons: TreePine, Rocket, Zap, Flame, Target, Wrench, BarChart3, Construction, Lightbulb, Palette, Smartphone, Lock
+- Used in CreateProject, Dashboard, Header, SettingsView
+- Exported `PROJECT_ICONS` and `getProjectIconComponent()` for reuse
 
-### Issue Detail Panel (IssueDetailPanel.tsx) - Enhanced
-- Due date picker with overdue highlighting (red border + "Overdue" text)
-- Time tracking section: estimate input (parseable "2h 30m"), time spent display, progress bar
-- Epic child issues: story point aggregation header (done SP / total SP), individual SP badges
+### Shared Mock Users
+- Created `frontend/src/lib/users.ts` with consolidated MOCK_USERS
+- Eliminated duplication across BoardView, BacklogView, IssueDetailPanel
+- Exports: MOCK_USERS, MOCK_USERS_MAP, CURRENT_USER
 
-### Search Modal (SearchModal.tsx) - Enhanced
-- Keyboard navigation: arrow keys up/down, Enter to select
-- Text highlighting (highlightMatch function with amber marker)
-- Priority and status indicators on issue results
-- Issue count in section headers
-- Footer hint bar (Navigate/Select/Close shortcuts)
-- CornerDownLeft icon on selected item
+### Keyboard Shortcuts Enhanced
+- Fixed `?` keyboard shortcut (removed incorrect `!e.shiftKey`)
+- Added G-prefix navigation (G+B board, G+L backlog, G+R roadmap, G+S settings)
+- Keyboard shortcuts modal shows "then" for G-prefix (G then B vs ⌘+K)
 
-### Components Page (ComponentsView.tsx) - Full CRUD
-- Create new components with name, description, lead, and color picker
-- Edit existing components inline with form
-- Delete with confirmation dialog
-- Search/filter functionality
-- Stats cards (total, linked issues, active)
-- Issue count per component (matches label/summary)
-- localStorage persistence per project
+### Board View Polish
+- Added "Lowest" to priority filter
+- Fixed filter indicator colors for dark mode (amber-500/10, amber-500/15)
+- Filter badge pills use alpha-based colors for theme compatibility
 
-### Labels Page (LabelsView.tsx) - Full CRUD
-- Create new labels with name and color picker, live preview
-- Edit inline with color selection
-- Delete with confirmation
-- Search/filter
-- Stats cards (total, usage count, active)
-- Colored label preview pills
-- localStorage persistence per project
+### Search Modal Polish
+- Highlight color changed to amber-400/30 for dark mode compatibility
 
-### Active Sprints (SprintsView.tsx) - Enhanced
-- Added "Go to Backlog" button when no active sprints
+### Dark Mode - Comprehensive e2e Tests
+- Added dark-mode-pages.spec.ts with 6 tests covering all major pages
+- All dark mode pages verified: dashboard, board, backlog, reports, settings, create project
+- Dark mode form elements, cards, charts all render correctly
 
-### Dark Mode (index.css) - Enhanced
-- Dark mode form elements (input, textarea, select) with proper backgrounds
-- Dark mode placeholder text color
-- Dark mode focus states
-- Dark mode dropdown option elements
-- Dark mode card-glow effect
+## PREVIOUS SESSION CHANGES
 
-## PREVIOUS SESSION CHANGES (Session 3)
+### Session 4 - Board View Enhancement
+- Priority filter dropdown, story point totals per column
+- Due date display (overdue/soon indicators), label pills on cards
+- Inline quick-add feature: click + on any column
+- Status badge pills in backlog, assignee avatars
+- Due date picker with overdue highlighting in issue detail
+- Time tracking section: estimate input, time spent, progress bar
+- Epic child issues: story point aggregation
+- Enhanced search modal: keyboard nav, text highlighting, status indicators
+- Components page: full CRUD with color picker
+- Labels page: full CRUD with color picker
+- Page transition animations, scroll-to-top on navigation
 
-### Enhanced Issue Detail Panel (IssueDetailPanel.tsx)
-- Two-column layout: main content + right sidebar
-- Assignee dropdown, Reporter display, Priority select
-- Sprint selector, Epic linker, Labels multi-select
-- Comments/History tabs, Child issues for Epics
-
-### Enhanced Create Issue Modal (CreateIssueModal.tsx)
-- Sprint selection, Epic selection, Labels multi-select
-- Cmd+Enter shortcut, "Create another" toggle
-
-### Keyboard Shortcuts Modal (KeyboardShortcutsModal.tsx)
-- 4 sections: Global, Navigation, Issue Detail, Board
-- Triggered by ? key
-
-### Enhanced Settings View (SettingsView.tsx)
-- Tabbed: General, Workflow, Data, Danger Zone
-- Export/Import JSON, Board columns display, Project stats
-
-### Enhanced Dashboard (Dashboard.tsx)
-- Gradient text, Quick actions, Quick Tips, Card glow, Project limit
-
-### Enhanced Roadmap View (RoadmapView.tsx)
-- Summary stats, Expandable epics, Progress bars, Status badges
-
-### Enhanced Reports View (ReportsView.tsx)
-- 5 stat cards, Completion rate bar, Creation trend chart, Legends
-
-### Create Project (CreateProject.tsx)
-- Live preview card, Emoji icon picker, Two-column layout
-
-### CSS Polish (index.css)
-- Button press, Gradient text, Pulse animation, Progress fill
-- Card glow, Extended stagger, Spring transition, Selection color
+### Session 3 - Issue Detail & Modals
+- Two-column issue detail layout with sidebar
+- Assignee/Reporter/Priority/Sprint/Epic/Labels in detail panel
+- Comments/History tabs
+- Enhanced create issue modal with sprint/epic/labels
+- Keyboard shortcuts modal (? key)
+- Settings view with 4 tabs
+- Dashboard with gradient text, quick actions
+- Roadmap view with epics, progress bars
+- Reports view with charts
+- Create project with live preview
 
 ## ALL PAGES (Working)
 1. Dashboard - Hero, stats, quick actions, project cards, tips
@@ -132,11 +103,12 @@ VITE_API_URL=https://q4rf5i4bal.execute-api.us-east-1.amazonaws.com (set in fron
 3. Backlog View - Sprint sections, start/complete, move-to-sprint
 4. Roadmap View - Epic timeline, progress bars, SP aggregation
 5. Reports View - 5 stat cards, pie/bar/area charts, completion rate
-6. Settings View - 4 tabs, export/import, delete
+6. Settings View - 4 tabs, export/import, delete with confirmation
 7. Labels View - Full CRUD, color picker, usage counts
 8. Components View - Full CRUD, lead assignment, stats
 9. Active Sprints - Progress cards, issue lists, complete action
-10. Create Project - Form with live preview, icon/color picker
+10. Create Project - Form with live preview, Lucide icon picker
+11. 404 Page - Clean with go back / dashboard buttons
 
 ## API ENDPOINTS (all working)
 - GET /projects, POST /projects
@@ -148,20 +120,17 @@ VITE_API_URL=https://q4rf5i4bal.execute-api.us-east-1.amazonaws.com (set in fron
 - GET/PUT /projects/:id/board
 - GET/POST /issues/:id/comments
 - GET /search?q=term
-
-### Also Added (Later in Session 4)
-- Page transition animations (fadeIn + slideInUp on route change)
-- Scroll-to-top on navigation for better UX
-- Dark mode screenshot tests
+- GET /health
 
 ## TESTS STATUS
 - tests.json: 50 tests defined, all passes: true
 - CDK tests: 16/16 pass
-- E2E tests: 45/45 pass (43 original + 2 dark mode tests)
-- Categories: shared (5), infrastructure (6), backend (7), functional (24), style (8)
+- E2E tests: 51/51 pass
+- Categories: shared (5), infrastructure (6), backend (7+1), functional (24), style (8)
 
 ## DESIGN FUSION
 - Everforest color palette: forest greens + amber accents
 - Typography: Space Grotesk (display), DM Sans (body), JetBrains Mono (code)
 - CSS custom properties for light/dark theme
 - Micro-interactions: gradient text, card glow, spring transitions, staggered entries
+- Alpha-based colors (amber-500/10, bg-info/10) for consistent light/dark rendering
