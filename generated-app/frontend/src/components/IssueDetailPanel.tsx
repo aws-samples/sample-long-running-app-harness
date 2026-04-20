@@ -65,6 +65,7 @@ export default function IssueDetailPanel() {
   const [showSprintDropdown, setShowSprintDropdown] = useState(false);
   const [showEpicDropdown, setShowEpicDropdown] = useState(false);
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [activeTab, setActiveTab] = useState<'comments' | 'history'>('comments');
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -218,6 +219,7 @@ export default function IssueDetailPanel() {
     try {
       await deleteIssue.mutateAsync(issue.id);
       toast.success('Issue deleted');
+      setShowDeleteConfirm(false);
       close();
     } catch (err: any) {
       toast.error(err.message);
@@ -230,7 +232,7 @@ export default function IssueDetailPanel() {
   }
 
   return (
-    <div ref={panelRef} className="w-[680px] bg-card-bg border-l border-border shadow-xl animate-slide-in-right flex flex-col shrink-0 overflow-hidden">
+    <div ref={panelRef} className="w-[680px] bg-card-bg border-l border-border shadow-xl animate-slide-in-right flex flex-col shrink-0 overflow-hidden relative">
       {isLoading ? (
         <div className="p-6 space-y-4">
           <div className="skeleton h-6 w-32" />
@@ -274,7 +276,7 @@ export default function IssueDetailPanel() {
               <button onClick={handleCopyLink} className="p-1.5 rounded hover:bg-hover-bg transition-colors" title="Copy link">
                 <Copy size={15} className="text-text-tertiary" />
               </button>
-              <button onClick={handleDelete} className="p-1.5 rounded hover:bg-hover-bg transition-colors text-error" title="Delete issue">
+              <button onClick={() => setShowDeleteConfirm(true)} className="p-1.5 rounded hover:bg-hover-bg transition-colors text-error" title="Delete issue">
                 <Trash2 size={15} />
               </button>
               <button onClick={close} className="p-1.5 rounded hover:bg-hover-bg transition-colors ml-2">
@@ -872,6 +874,41 @@ export default function IssueDetailPanel() {
         </>
       ) : (
         <div className="p-6 text-text-tertiary text-sm">Issue not found</div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-card-bg rounded-xl shadow-2xl border border-border p-6 mx-6 max-w-sm w-full animate-scale-in">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-error/10 flex items-center justify-center">
+                <Trash2 size={18} className="text-error" />
+              </div>
+              <div>
+                <h3 className="font-display font-semibold text-sm">Delete Issue</h3>
+                <p className="text-xs text-text-tertiary">{issue?.key}</p>
+              </div>
+            </div>
+            <p className="text-sm text-text-secondary mb-5">
+              Are you sure you want to delete <span className="font-medium text-text-primary">"{issue?.summary}"</span>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 text-sm rounded-lg border border-border hover:bg-hover-bg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleteIssue.isPending}
+                className="px-4 py-2 text-sm rounded-lg bg-error text-white hover:bg-error/90 transition-colors disabled:opacity-50"
+              >
+                {deleteIssue.isPending ? 'Deleting...' : 'Delete Issue'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
