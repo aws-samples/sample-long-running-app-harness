@@ -1,4 +1,4 @@
-import { Search, Plus, TreePine, ChevronDown, Menu } from 'lucide-react';
+import { Search, Plus, TreePine, ChevronDown, Menu, Moon, Sun } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useProjects } from '../../hooks/useApi';
 import { useNavigate } from 'react-router-dom';
@@ -119,6 +119,15 @@ export default function Header() {
           </div>
         )}
       </div>
+
+      {/* Dark mode toggle */}
+      <button
+        onClick={() => dispatch({ type: 'SET_THEME', theme: state.theme === 'dark' ? 'light' : 'dark' })}
+        className="p-1.5 rounded-md hover:bg-white/10 transition-colors"
+        title={state.theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        {state.theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+      </button>
 
       {/* Create button */}
       <button

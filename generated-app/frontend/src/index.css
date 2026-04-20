@@ -150,8 +150,61 @@ h1, h2, h3, h4, h5, h6 {
 .stagger-children > *:nth-child(7) { animation-delay: 300ms; }
 .stagger-children > *:nth-child(8) { animation-delay: 350ms; }
 
-/* Dark mode */
+/* Dark mode overrides */
+.dark {
+  --color-page-bg: #1A1F2E;
+  --color-card-bg: #232839;
+  --color-sidebar-bg: #1E2333;
+  --color-hover-bg: #2A3042;
+  --color-selected-bg: rgba(212, 163, 115, 0.12);
+  --color-text-primary: #E8ECF4;
+  --color-text-secondary: #A0AAC0;
+  --color-text-tertiary: #6B7896;
+  --color-text-inverse: #FFFFFF;
+  --color-border: #2F3652;
+  --color-border-focus: #D4A373;
+  --color-success: #5AB88B;
+  --color-warning: #E9C46A;
+  --color-error: #E07B50;
+  --color-info: #5CA8FF;
+  --color-forest-900: #1B3328;
+  --color-forest-800: #244D3A;
+  --color-forest-700: #2D6A4F;
+}
+
 .dark body {
-  background: #1A1F2E;
-  color: #E8ECF4;
+  background: var(--color-page-bg);
+  color: var(--color-text-primary);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #3A4260;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4A5478;
+}
+
+.dark .skeleton {
+  background: linear-gradient(90deg, #2A3042 25%, #343B52 50%, #2A3042 75%);
+  background-size: 200px 100%;
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Smooth page transitions */
+.page-transition {
+  animation: fadeIn 0.15s ease-out, slideInUp 0.25s ease-out;
 }
