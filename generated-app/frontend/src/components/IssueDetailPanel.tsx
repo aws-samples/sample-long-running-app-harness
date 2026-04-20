@@ -252,8 +252,13 @@ export default function IssueDetailPanel() {
   }
 
   function handleCopyLink() {
-    navigator.clipboard.writeText(window.location.origin + `?issue=${issue?.id}`);
-    toast.success('Link copied to clipboard');
+    if (issue?.key) {
+      navigator.clipboard.writeText(issue.key);
+      toast.success(`${issue.key} copied to clipboard`);
+    } else {
+      navigator.clipboard.writeText(window.location.origin + `?issue=${issue?.id}`);
+      toast.success('Link copied to clipboard');
+    }
   }
 
   return (
@@ -298,7 +303,7 @@ export default function IssueDetailPanel() {
               <span className="text-sm font-mono text-text-secondary">{issue.key}</span>
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={handleCopyLink} className="p-1.5 rounded hover:bg-hover-bg transition-colors" title="Copy link">
+              <button onClick={handleCopyLink} className="p-1.5 rounded hover:bg-hover-bg transition-colors" title="Copy issue key">
                 <Copy size={15} className="text-text-tertiary" />
               </button>
               <button onClick={() => setShowDeleteConfirm(true)} className="p-1.5 rounded hover:bg-hover-bg transition-colors text-error" title="Delete issue">
