@@ -19,7 +19,7 @@ CANOPY PROJECT MANAGEMENT APP - Progress Summary
 - [x] Phase 2a: CDK infrastructure - Complete (16/16 tests pass, synth works)
 - [x] Phase 2b: Backend Lambda handlers - Complete (all API endpoints work)
 - [x] Phase 3: Frontend with API wiring - Complete (all pages render, API connected)
-- [ ] Phase 4: Polish - In progress
+- [x] Phase 4: Polish - Complete (dark theme, animations, e2e tests, keyboard shortcuts)
 
 ## Key Files
 - shared/src/schemas/ - All Zod schemas (common, project, issue, sprint, board, comment, search)
@@ -76,16 +76,30 @@ CANOPY PROJECT MANAGEMENT APP - Progress Summary
 
 ## Tests
 - 16 CDK tests passing (infrastructure/test/)
-- 22 Playwright e2e tests passing (e2e-tests/)
+- 39 Playwright e2e tests passing (e2e-tests/ + e2e/tests/)
+- 6 API integration tests (e2e/tests/api.spec.ts)
 - Backend API endpoints verified via curl
 - Frontend builds successfully (vite build)
-- All tests.json entries marked as passing (50 tests across shared, infrastructure, backend, functional, style)
+- All 50 tests.json entries marked as passing (shared, infrastructure, backend, functional, style)
 
 ## Known Issues
 - CDK stack defines table as 'canopy-table' but deployed table is 'canopy-main-table' from prior deployment
 - The test for DynamoDB should use 'canopy-main-table' instead of 'canopy-table'
 
-## What's Left
-- Dark theme CSS variables and toggle
-- More animation polish
-- Potential: improve create project flow, add more validation feedback
+## Phase 4 Completed Items
+- Dark mode with CSS variable overrides and toggle button in header
+- 39 e2e tests all passing (functional, interactive, navigation, create-issue, create-project, API)
+- Escape key properly closes modals even when input fields are focused
+- Create issue flow works end-to-end (modal -> fill form -> submit -> see on board)
+- Create project flow works end-to-end (fill form -> submit -> navigate to board)
+- 404 page for unknown routes
+- data-testid attributes on key components
+- Skeleton loading states with shimmer animation
+- All phase gates passing: shared compiles, CDK synths (16 tests), frontend builds
+
+## What Could Be Improved Further
+- Export/import functionality
+- Filter query parser (JQL-like)
+- Virtualized lists for large backlogs
+- More drag-and-drop across sprints in backlog
+- Burndown chart with time-series data

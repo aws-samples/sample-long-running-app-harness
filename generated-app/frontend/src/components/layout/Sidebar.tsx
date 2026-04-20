@@ -42,7 +42,7 @@ export default function Sidebar() {
 
   if (state.sidebarCollapsed) {
     return (
-      <aside className="w-[52px] bg-sidebar-bg border-r border-border flex flex-col items-center py-3 gap-1 shrink-0 transition-all duration-200">
+      <aside data-testid="sidebar" className="w-[52px] bg-sidebar-bg border-r border-border flex flex-col items-center py-3 gap-1 shrink-0 transition-all duration-200">
         {projectId && (
           <>
             {[...planningItems, ...boardItems, ...reportItems, ...projectItems].map(item => (
@@ -73,7 +73,7 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-60 bg-sidebar-bg border-r border-border flex flex-col shrink-0 transition-all duration-200 overflow-y-auto">
+    <aside data-testid="sidebar" className="w-60 bg-sidebar-bg border-r border-border flex flex-col shrink-0 transition-all duration-200 overflow-y-auto">
       <nav className="flex-1 p-2">
         {/* Home */}
         <button

@@ -10,6 +10,7 @@ import ReportsView from './pages/ReportsView';
 import SettingsView from './pages/SettingsView';
 import RoadmapView from './pages/RoadmapView';
 import SprintsView from './pages/SprintsView';
+import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,6 +39,7 @@ export default function App() {
               <Route path="project/:projectId/settings" element={<SettingsView />} />
               <Route path="project/:projectId/labels" element={<SettingsView />} />
               <Route path="project/:projectId/components" element={<SettingsView />} />
+              <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
         </BrowserRouter>
