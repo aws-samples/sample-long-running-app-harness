@@ -205,9 +205,17 @@ describe('CanopyStack', () => {
   });
 
   // ============================================================
-  // Snapshot Test
+  // Snapshot Test (normalized to ignore S3Key hash changes from esbuild)
   // ============================================================
   test('matches snapshot', () => {
-    expect(template.toJSON()).toMatchSnapshot();
+    const templateJson = template.toJSON();
+    // Normalize S3Key hashes which change on every rebuild
+    const normalized = JSON.parse(
+      JSON.stringify(templateJson).replace(
+        /"S3Key"\s*:\s*"[a-f0-9]{64}\.zip"/g,
+        '"S3Key": "HASH_PLACEHOLDER.zip"'
+      )
+    );
+    expect(normalized).toMatchSnapshot();
   });
 });

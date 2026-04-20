@@ -81,7 +81,7 @@ exports[`CanopyStack matches snapshot 1`] = `
       "Properties": {
         "Code": {
           "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
-          "S3Key": "8fca6aed127a8e6535dbb6fb7cbd4ebe278369cb2d73cf7e2bea7c24468a673d.zip",
+          "S3Key": "HASH_PLACEHOLDER.zip",
         },
         "Environment": {
           "Variables": {
@@ -809,7 +809,7 @@ exports[`CanopyStack matches snapshot 1`] = `
       "Properties": {
         "Code": {
           "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
-          "S3Key": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip",
+          "S3Key": "HASH_PLACEHOLDER.zip",
         },
         "Description": {
           "Fn::Join": [
