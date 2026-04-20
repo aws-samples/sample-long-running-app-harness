@@ -3,6 +3,7 @@ import { X, Bookmark, Bug, CheckSquare, Zap, ListTodo, Copy, Trash2, User, Calen
 import { useApp } from '../context/AppContext';
 import { useIssue, useUpdateIssue, useDeleteIssue, useComments, useAddComment, useSprints, useIssues } from '../hooks/useApi';
 import { ISSUE_TYPE_COLORS, PRIORITY_COLORS, PRIORITY_ICONS, formatRelativeDate, formatDate } from '../lib/utils';
+import { MOCK_USERS, MOCK_USERS_MAP, CURRENT_USER } from '../lib/users';
 import { toast } from 'sonner';
 import type { Priority, IssueType } from '@canopy/shared';
 
@@ -30,14 +31,6 @@ const STATUS_COLORS: Record<string, string> = {
 
 const PRIORITIES: Priority[] = ['Highest', 'High', 'Medium', 'Low', 'Lowest'];
 const ISSUE_TYPES: IssueType[] = ['Epic', 'Story', 'Bug', 'Task', 'Sub-task'];
-
-const MOCK_USERS = [
-  { id: 'user-1', name: 'Alice Chen', initials: 'AC', color: '#1B4332' },
-  { id: 'user-2', name: 'Bob Smith', initials: 'BS', color: '#2D6A4F' },
-  { id: 'user-3', name: 'Carol Davis', initials: 'CD', color: '#52796F' },
-  { id: 'user-4', name: 'Dan Wilson', initials: 'DW', color: '#D4A373' },
-  { id: 'user-5', name: 'Eve Johnson', initials: 'EJ', color: '#BC6C25' },
-];
 
 const AVAILABLE_LABELS = [
   { name: 'frontend', color: '#2196F3' },

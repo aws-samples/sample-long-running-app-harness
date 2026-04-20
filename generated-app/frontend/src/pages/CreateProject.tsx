@@ -2,11 +2,36 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCreateProject } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
-import { ArrowLeft, ArrowRight, Eye } from 'lucide-react';
+import {
+  ArrowLeft, ArrowRight, Eye, TreePine, Rocket, Zap, Flame,
+  Target, Wrench, BarChart3, Construction, Lightbulb, Palette,
+  Smartphone, Lock
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 const PROJECT_COLORS = ['#1B4332', '#2D6A4F', '#52796F', '#D4A373', '#BC6C25', '#9B59B6', '#2196F3', '#E9C46A'];
-const QUICK_ICONS = ['🌿', '🚀', '⚡', '🔥', '🎯', '🛠️', '📊', '🏗️', '💡', '🎨', '📱', '🔒'];
+
+const PROJECT_ICONS = [
+  { name: 'tree', icon: TreePine, label: 'Tree' },
+  { name: 'rocket', icon: Rocket, label: 'Rocket' },
+  { name: 'zap', icon: Zap, label: 'Lightning' },
+  { name: 'flame', icon: Flame, label: 'Fire' },
+  { name: 'target', icon: Target, label: 'Target' },
+  { name: 'wrench', icon: Wrench, label: 'Tools' },
+  { name: 'chart', icon: BarChart3, label: 'Chart' },
+  { name: 'build', icon: Construction, label: 'Build' },
+  { name: 'idea', icon: Lightbulb, label: 'Idea' },
+  { name: 'design', icon: Palette, label: 'Design' },
+  { name: 'mobile', icon: Smartphone, label: 'Mobile' },
+  { name: 'security', icon: Lock, label: 'Security' },
+];
+
+function getProjectIconComponent(iconName: string) {
+  const found = PROJECT_ICONS.find(i => i.name === iconName);
+  if (!found) return null;
+  const Icon = found.icon;
+  return <Icon size={16} />;
+}
 
 export default function CreateProject() {
   const navigate = useNavigate();
@@ -71,6 +96,7 @@ export default function CreateProject() {
               className="w-full h-10 px-3 text-sm border border-border rounded-md focus:border-border-focus focus:outline-none"
               autoFocus
               required
+              maxLength={100}
             />
           </div>
 
@@ -101,18 +127,19 @@ export default function CreateProject() {
           <div>
             <label className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider block mb-2">Icon</label>
             <div className="flex flex-wrap gap-1.5">
-              {QUICK_ICONS.map(ic => (
+              {PROJECT_ICONS.map(({ name: iconName, icon: IconComp, label }) => (
                 <button
-                  key={ic}
+                  key={iconName}
                   type="button"
-                  onClick={() => setIcon(icon === ic ? '' : ic)}
-                  className={`w-8 h-8 rounded-md text-lg flex items-center justify-center transition-all border ${
-                    icon === ic
-                      ? 'border-amber-500 bg-amber-500/10 scale-110'
-                      : 'border-border hover:border-border-focus hover:scale-105'
+                  onClick={() => setIcon(icon === iconName ? '' : iconName)}
+                  title={label}
+                  className={`w-9 h-9 rounded-md flex items-center justify-center transition-all border ${
+                    icon === iconName
+                      ? 'border-amber-500 bg-amber-500/10 text-amber-600 scale-110'
+                      : 'border-border text-text-secondary hover:border-border-focus hover:text-text-primary hover:scale-105'
                   }`}
                 >
-                  {ic}
+                  <IconComp size={18} />
                 </button>
               ))}
             </div>
@@ -145,7 +172,7 @@ export default function CreateProject() {
             </button>
             <button
               type="submit"
-              disabled={!name.trim() || !key.trim() || createProject.isPending}
+              disabled={!name.trim() || !key.trim() || key.length < 2 || createProject.isPending}
               className="h-10 px-5 text-sm bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors disabled:opacity-50 font-medium flex items-center gap-2"
             >
               {createProject.isPending ? 'Creating...' : (
@@ -167,7 +194,7 @@ export default function CreateProject() {
                   className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold text-white shrink-0 transition-colors"
                   style={{ backgroundColor: color }}
                 >
-                  {icon || key?.slice(0, 2) || '??'}
+                  {icon ? getProjectIconComponent(icon) : (key?.slice(0, 2) || '??')}
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="font-display font-semibold truncate">
@@ -196,3 +223,5 @@ export default function CreateProject() {
     </div>
   );
 }
+
+export { PROJECT_ICONS, getProjectIconComponent };

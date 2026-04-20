@@ -4,6 +4,7 @@ import { useProject, useUpdateProject, useDeleteProject, useIssues, useSprints, 
 import { useApp } from '../context/AppContext';
 import { toast } from 'sonner';
 import { Trash2, Download, Upload, Settings, Palette, FileText, Shield } from 'lucide-react';
+import { PROJECT_ICONS, getProjectIconComponent } from './CreateProject';
 
 const PROJECT_COLORS = ['#1B4332', '#2D6A4F', '#52796F', '#D4A373', '#BC6C25', '#9B59B6', '#2196F3', '#E9C46A'];
 
@@ -187,15 +188,24 @@ export default function SettingsView() {
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider block mb-1.5">Icon / Emoji</label>
-                <input
-                  type="text"
-                  value={icon}
-                  onChange={e => setIcon(e.target.value)}
-                  placeholder="🌿"
-                  className="w-20 h-10 px-3 text-lg text-center border border-border rounded-md focus:border-border-focus focus:outline-none"
-                  maxLength={2}
-                />
+                <label className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider block mb-2">Icon</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {PROJECT_ICONS.map(({ name: iconName, icon: IconComp, label }) => (
+                    <button
+                      key={iconName}
+                      type="button"
+                      onClick={() => setIcon(icon === iconName ? '' : iconName)}
+                      title={label}
+                      className={`w-9 h-9 rounded-md flex items-center justify-center transition-all border ${
+                        icon === iconName
+                          ? 'border-amber-500 bg-amber-500/10 text-amber-600 scale-110'
+                          : 'border-border text-text-secondary hover:border-border-focus hover:text-text-primary hover:scale-105'
+                      }`}
+                    >
+                      <IconComp size={18} />
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>

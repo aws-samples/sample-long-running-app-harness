@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { useProjects } from '../../hooks/useApi';
 import { useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
+import { getProjectIconComponent } from '../../pages/CreateProject';
 
 export default function Header() {
   const { state, dispatch } = useApp();
@@ -63,10 +64,10 @@ export default function Header() {
           {currentProject ? (
             <>
               <span
-                className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold"
+                className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white"
                 style={{ backgroundColor: currentProject.color || '#D4A373' }}
               >
-                {currentProject.icon || currentProject.key?.slice(0,2)}
+                {currentProject.icon ? (getProjectIconComponent(currentProject.icon) || currentProject.key?.slice(0,2)) : currentProject.key?.slice(0,2)}
               </span>
               <span className="font-medium hidden md:inline max-w-[180px] truncate">{currentProject.name}</span>
             </>
@@ -105,7 +106,7 @@ export default function Header() {
                     className="w-7 h-7 rounded flex items-center justify-center text-[11px] font-bold text-white shrink-0"
                     style={{ backgroundColor: project.color || '#52796F' }}
                   >
-                    {project.icon || project.key?.slice(0,2)}
+                    {project.icon ? (getProjectIconComponent(project.icon) || project.key?.slice(0,2)) : project.key?.slice(0,2)}
                   </span>
                   <div className="text-left min-w-0">
                     <div className="font-medium truncate">{project.name}</div>

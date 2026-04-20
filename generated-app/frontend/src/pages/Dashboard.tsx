@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { TreePine, Plus, FolderOpen, ArrowRight, AlertTriangle, Keyboard, BarChart3, Layout, ListChecks } from 'lucide-react';
 import { formatRelativeDate } from '../lib/utils';
 import { isApiConfigured } from '../api/client';
+import { getProjectIconComponent } from './CreateProject';
 
 export default function Dashboard() {
   const { data: projects, isLoading, error } = useProjects();
@@ -163,7 +164,7 @@ export default function Dashboard() {
                     className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold text-white shrink-0"
                     style={{ backgroundColor: project.color || '#52796F' }}
                   >
-                    {project.icon || project.key?.slice(0,2)}
+                    {project.icon ? (getProjectIconComponent(project.icon) || project.key?.slice(0,2)) : project.key?.slice(0,2)}
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="font-display font-semibold truncate">{project.name}</div>

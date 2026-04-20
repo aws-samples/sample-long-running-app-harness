@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useIssues, useBoard, useUpdateIssue, useProject, useSprints, useCreateIssue } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
 import { ISSUE_TYPE_COLORS, PRIORITY_COLORS, PRIORITY_ICONS } from '../lib/utils';
+import { MOCK_USERS_MAP } from '../lib/users';
 import {
   DndContext, closestCenter, type DragEndEvent, DragOverlay, type DragStartEvent,
   PointerSensor, useSensor, useSensors, useDroppable,
@@ -19,14 +20,6 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   Bug: <Bug size={13} />,
   Task: <CheckSquare size={13} />,
   'Sub-task': <ListTodo size={13} />,
-};
-
-const MOCK_USERS: Record<string, { name: string; initials: string; color: string }> = {
-  'user-1': { name: 'Alice Chen', initials: 'AC', color: '#1B4332' },
-  'user-2': { name: 'Bob Smith', initials: 'BS', color: '#2D6A4F' },
-  'user-3': { name: 'Carol Davis', initials: 'CD', color: '#52796F' },
-  'user-4': { name: 'Dan Wilson', initials: 'DW', color: '#D4A373' },
-  'user-5': { name: 'Eve Johnson', initials: 'EJ', color: '#BC6C25' },
 };
 
 const DEFAULT_COLUMNS = [
@@ -215,7 +208,7 @@ export default function BoardView() {
                   </button>
                 ))}
                 <div className="px-3 py-1.5 mt-1 border-t border-border text-[10px] font-medium text-text-tertiary uppercase tracking-wider">Priority</div>
-                {(['all', 'Highest', 'High', 'Medium', 'Low'] as PriorityFilter[]).map(p => (
+                {(['all', 'Highest', 'High', 'Medium', 'Low', 'Lowest'] as PriorityFilter[]).map(p => (
                   <button
                     key={p}
                     onClick={() => setPriorityFilter(p)}
@@ -441,7 +434,7 @@ function SortableIssueCard({ issue, onClick }: { issue: Issue; onClick: () => vo
 }
 
 function IssueCard({ issue, isDragging, onClick }: { issue: Issue; isDragging?: boolean; onClick?: () => void }) {
-  const assignee = issue.assigneeId ? MOCK_USERS[issue.assigneeId] : null;
+  const assignee = issue.assigneeId ? MOCK_USERS_MAP[issue.assigneeId] : null;
   const isOverdue = issue.dueDate && new Date(issue.dueDate) < new Date() && issue.status !== 'done';
   const isDueSoon = issue.dueDate && !isOverdue && issue.status !== 'done' &&
     (new Date(issue.dueDate).getTime() - new Date().getTime()) < 3 * 24 * 60 * 60 * 1000;

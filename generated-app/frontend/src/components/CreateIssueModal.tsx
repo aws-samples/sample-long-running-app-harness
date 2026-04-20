@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { X, Zap } from 'lucide-react';
+import { X, User } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useCreateIssue, useSprints, useIssues } from '../hooks/useApi';
-import { ISSUE_TYPE_COLORS } from '../lib/utils';
+import { MOCK_USERS } from '../lib/users';
 import { toast } from 'sonner';
 import type { IssueType, Priority } from '@canopy/shared';
 
@@ -36,6 +36,8 @@ export default function CreateIssueModal() {
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [sprintId, setSprintId] = useState('');
   const [epicId, setEpicId] = useState('');
+  const [assigneeId, setAssigneeId] = useState('');
+  const [dueDate, setDueDate] = useState('');
   const [createAnother, setCreateAnother] = useState(false);
   const [showLabels, setShowLabels] = useState(false);
 
@@ -65,6 +67,8 @@ export default function CreateIssueModal() {
           components: [],
           sprintId: sprintId || undefined,
           epicId: epicId || undefined,
+          assigneeId: assigneeId || undefined,
+          dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
         },
       });
       toast.success('Issue created successfully');
@@ -72,6 +76,7 @@ export default function CreateIssueModal() {
         setSummary('');
         setDescription('');
         setStoryPoints('');
+        setDueDate('');
       } else {
         dispatch({ type: 'SET_CREATE_ISSUE', show: false });
       }
@@ -141,6 +146,7 @@ export default function CreateIssueModal() {
                 className="w-full h-9 px-3 text-sm border border-border rounded-md focus:border-border-focus focus:outline-none"
                 autoFocus
                 required
+                maxLength={255}
               />
             </div>
 
@@ -153,6 +159,31 @@ export default function CreateIssueModal() {
                 rows={3}
                 className="w-full px-3 py-2 text-sm border border-border rounded-md focus:border-border-focus focus:outline-none resize-none"
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider block mb-1.5">Assignee</label>
+                <select
+                  value={assigneeId}
+                  onChange={e => setAssigneeId(e.target.value)}
+                  className="w-full h-9 px-3 text-sm bg-card-bg border border-border rounded-md focus:border-border-focus focus:outline-none"
+                >
+                  <option value="">Unassigned</option>
+                  {MOCK_USERS.map(u => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider block mb-1.5">Due Date</label>
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={e => setDueDate(e.target.value)}
+                  className="w-full h-9 px-3 text-sm border border-border rounded-md focus:border-border-focus focus:outline-none bg-card-bg"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -243,7 +274,7 @@ export default function CreateIssueModal() {
                         >
                           <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: label.color }} />
                           <span className="flex-1">{label.name}</span>
-                          {isSelected && <span className="text-amber-500">✓</span>}
+                          {isSelected && <span className="text-amber-500 text-xs">✓</span>}
                         </button>
                       );
                     })}
@@ -282,7 +313,7 @@ export default function CreateIssueModal() {
             </div>
 
             <p className="text-[10px] text-text-tertiary text-right">
-              Tip: Press ⌘+Enter to create
+              Tip: Press {navigator.platform?.includes('Mac') ? '⌘' : 'Ctrl'}+Enter to create
             </p>
           </form>
         )}

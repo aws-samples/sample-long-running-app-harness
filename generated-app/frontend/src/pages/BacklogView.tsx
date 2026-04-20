@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useIssues, useSprints, useProject, useUpdateIssue, useCreateSprint, useUpdateSprint, useCreateIssue } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
 import { ISSUE_TYPE_COLORS, PRIORITY_COLORS, PRIORITY_ICONS } from '../lib/utils';
+import { MOCK_USERS_MAP } from '../lib/users';
 import { Bookmark, Bug, CheckSquare, Zap, ListTodo, Plus, ChevronDown, ChevronRight, GripVertical, Play, CheckCircle2, User } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Issue, Sprint } from '@canopy/shared';
@@ -23,13 +24,6 @@ const STATUS_BADGE_COLORS: Record<string, string> = {
   in_progress: 'bg-info/15 text-info',
   in_review: 'bg-warning/15 text-warning',
   done: 'bg-success/15 text-success',
-};
-const MOCK_USERS: Record<string, { name: string; initials: string; color: string }> = {
-  'user-1': { name: 'Alice Chen', initials: 'AC', color: '#1B4332' },
-  'user-2': { name: 'Bob Smith', initials: 'BS', color: '#2D6A4F' },
-  'user-3': { name: 'Carol Davis', initials: 'CD', color: '#52796F' },
-  'user-4': { name: 'Dan Wilson', initials: 'DW', color: '#D4A373' },
-  'user-5': { name: 'Eve Johnson', initials: 'EJ', color: '#BC6C25' },
 };
 
 export default function BacklogView() {
@@ -340,7 +334,7 @@ function IssueRow({
   onMoveToSprint: (sprintId: string) => void; moveLabel?: string;
 }) {
   const [showMenu, setShowMenu] = useState(false);
-  const assignee = issue.assigneeId ? MOCK_USERS[issue.assigneeId] : null;
+  const assignee = issue.assigneeId ? MOCK_USERS_MAP[issue.assigneeId] : null;
 
   return (
     <div
