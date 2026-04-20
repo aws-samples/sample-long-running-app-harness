@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useIssues, useSprints, useProject, useUpdateIssue, useCreateSprint, useUpdateSprint } from '../hooks/useApi';
+import { useIssues, useSprints, useProject, useUpdateIssue, useCreateSprint, useUpdateSprint, useCreateIssue } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
 import { ISSUE_TYPE_COLORS, PRIORITY_COLORS, PRIORITY_ICONS } from '../lib/utils';
 import { Bookmark, Bug, CheckSquare, Zap, ListTodo, Plus, ChevronDown, ChevronRight, GripVertical, Play, CheckCircle2, User } from 'lucide-react';
@@ -41,8 +41,11 @@ export default function BacklogView() {
   const createSprint = useCreateSprint();
   const updateSprint = useUpdateSprint();
   const updateIssue = useUpdateIssue();
+  const createIssue = useCreateIssue();
   const [quickFilter, setQuickFilter] = useState('');
   const [expandedSprints, setExpandedSprints] = useState<Set<string>>(new Set());
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
+  const [quickCreateText, setQuickCreateText] = useState('');
 
   const filteredIssues = useMemo(() => {
     if (!issues) return [];
@@ -121,6 +124,27 @@ export default function BacklogView() {
 
   const totalPoints = (items: Issue[]) => items.reduce((s, i) => s + (i.storyPoints || 0), 0);
 
+  async function handleQuickCreate() {
+    if (!quickCreateText.trim() || !projectId) return;
+    try {
+      await createIssue.mutateAsync({
+        projectId,
+        data: {
+          type: 'Task' as const,
+          summary: quickCreateText.trim(),
+          priority: 'Medium' as const,
+          labels: [],
+          components: [],
+        },
+      });
+      setQuickCreateText('');
+      setShowQuickCreate(false);
+      toast.success('Issue created in backlog');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to create issue');
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="animate-fade-in space-y-4">
@@ -198,16 +222,49 @@ export default function BacklogView() {
               onMoveToSprint={(sprintId) => handleMoveToSprint(issue.id, sprintId)}
             />
           ))}
-          {backlogIssues.length === 0 && (
+          {backlogIssues.length === 0 && !showQuickCreate && (
             <div className="text-center py-12 text-text-tertiary text-sm">
               <p>Your backlog is empty</p>
               <button
-                onClick={() => dispatch({ type: 'SET_CREATE_ISSUE', show: true })}
+                onClick={() => setShowQuickCreate(true)}
                 className="mt-2 text-amber-500 hover:underline"
               >
                 Create your first issue
               </button>
             </div>
+          )}
+
+          {/* Inline quick-create */}
+          {showQuickCreate ? (
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-card-bg border border-amber-400/50 rounded-lg mt-1 animate-scale-in">
+              <Plus size={14} className="text-amber-500 shrink-0" />
+              <input
+                type="text"
+                value={quickCreateText}
+                onChange={e => setQuickCreateText(e.target.value)}
+                placeholder="What needs to be done?"
+                className="flex-1 text-sm bg-transparent focus:outline-none"
+                autoFocus
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleQuickCreate(); }
+                  if (e.key === 'Escape') { setShowQuickCreate(false); setQuickCreateText(''); }
+                }}
+              />
+              <span className="text-[9px] text-text-tertiary shrink-0">Enter to create</span>
+              <button
+                onClick={() => { setShowQuickCreate(false); setQuickCreateText(''); }}
+                className="text-[10px] px-2 py-0.5 text-text-tertiary hover:bg-hover-bg rounded transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowQuickCreate(true)}
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-text-tertiary hover:text-text-secondary hover:bg-hover-bg rounded-lg transition-colors mt-1"
+            >
+              <Plus size={14} /> Create issue
+            </button>
           )}
         </div>
       </div>
