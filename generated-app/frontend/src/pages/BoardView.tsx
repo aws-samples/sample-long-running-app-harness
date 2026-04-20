@@ -9,7 +9,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Bookmark, Bug, CheckSquare, Zap, ListTodo, Plus, Filter, User } from 'lucide-react';
+import { Bookmark, Bug, CheckSquare, Zap, ListTodo, Plus, Filter, User, Calendar, X } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Issue } from '@canopy/shared';
 
@@ -44,6 +44,7 @@ const COLUMN_COLORS: Record<string, string> = {
 };
 
 type FilterType = 'all' | 'Epic' | 'Story' | 'Bug' | 'Task';
+type PriorityFilter = 'all' | 'Highest' | 'High' | 'Medium' | 'Low' | 'Lowest';
 
 export default function BoardView() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -56,6 +57,7 @@ export default function BoardView() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [quickFilter, setQuickFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState<FilterType>('all');
+  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
   const [showFilters, setShowFilters] = useState(false);
 
   const columns = board?.columns?.length ? board.columns : DEFAULT_COLUMNS;
@@ -79,8 +81,14 @@ export default function BoardView() {
     if (typeFilter !== 'all') {
       filtered = filtered.filter(i => i.type === typeFilter);
     }
+    if (priorityFilter !== 'all') {
+      filtered = filtered.filter(i => i.priority === priorityFilter);
+    }
     return filtered;
-  }, [issues, quickFilter, typeFilter]);
+  }, [issues, quickFilter, typeFilter, priorityFilter]);
+
+  const hasActiveFilters = quickFilter || typeFilter !== 'all' || priorityFilter !== 'all';
+  function clearFilters() { setQuickFilter(''); setTypeFilter('all'); setPriorityFilter('all'); }
 
   const issuesByStatus = useMemo(() => {
     const map: Record<string, Issue[]> = {};
@@ -180,17 +188,19 @@ export default function BoardView() {
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-1.5 h-8 px-3 text-sm border rounded-md transition-colors ${
-                typeFilter !== 'all' ? 'border-amber-400 bg-amber-50 text-amber-700' : 'border-border hover:bg-hover-bg'
+                hasActiveFilters ? 'border-amber-400 bg-amber-50 text-amber-700' : 'border-border hover:bg-hover-bg'
               }`}
             >
-              <Filter size={14} /> Type
+              <Filter size={14} /> Filters
+              {hasActiveFilters && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
             </button>
             {showFilters && (
-              <div className="absolute right-0 top-full mt-1 w-36 bg-card-bg rounded-lg shadow-lg border border-border py-1 z-10 animate-slide-down">
+              <div className="absolute right-0 top-full mt-1 w-48 bg-card-bg rounded-lg shadow-lg border border-border py-1 z-10 animate-slide-down">
+                <div className="px-3 py-1.5 text-[10px] font-medium text-text-tertiary uppercase tracking-wider">Type</div>
                 {(['all', 'Epic', 'Story', 'Bug', 'Task'] as FilterType[]).map(t => (
                   <button
                     key={t}
-                    onClick={() => { setTypeFilter(t); setShowFilters(false); }}
+                    onClick={() => setTypeFilter(t)}
                     className={`w-full text-left px-3 py-1.5 text-sm hover:bg-hover-bg transition-colors flex items-center gap-2 ${
                       typeFilter === t ? 'bg-selected-bg font-medium' : ''
                     }`}
@@ -203,6 +213,28 @@ export default function BoardView() {
                     )}
                   </button>
                 ))}
+                <div className="px-3 py-1.5 mt-1 border-t border-border text-[10px] font-medium text-text-tertiary uppercase tracking-wider">Priority</div>
+                {(['all', 'Highest', 'High', 'Medium', 'Low'] as PriorityFilter[]).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setPriorityFilter(p)}
+                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-hover-bg transition-colors flex items-center gap-2 ${
+                      priorityFilter === p ? 'bg-selected-bg font-medium' : ''
+                    }`}
+                  >
+                    {p === 'all' ? 'All Priorities' : (
+                      <>
+                        <span style={{ color: PRIORITY_COLORS[p] }}>{PRIORITY_ICONS[p]}</span>
+                        {p}
+                      </>
+                    )}
+                  </button>
+                ))}
+                {hasActiveFilters && (
+                  <div className="mt-1 pt-1 border-t border-border px-3 py-1.5">
+                    <button onClick={() => { clearFilters(); setShowFilters(false); }} className="text-xs text-amber-500 hover:underline">Clear all</button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -216,13 +248,22 @@ export default function BoardView() {
       </div>
 
       {/* Active filter indicator */}
-      {(quickFilter || typeFilter !== 'all') && (
-        <div className="flex items-center gap-2 mb-3 text-xs text-text-secondary">
+      {hasActiveFilters && (
+        <div className="flex items-center gap-2 mb-3 text-xs text-text-secondary animate-slide-in-up">
           <span>Showing {filteredIssues.length} of {issues?.length || 0} issues</span>
           {typeFilter !== 'all' && (
-            <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">Type: {typeFilter}</span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full">
+              <span style={{ color: ISSUE_TYPE_COLORS[typeFilter] }}>{TYPE_ICONS[typeFilter]}</span> {typeFilter}
+              <button onClick={() => setTypeFilter('all')}><X size={10} /></button>
+            </span>
           )}
-          <button onClick={() => { setQuickFilter(''); setTypeFilter('all'); }} className="text-amber-500 hover:underline">Clear filters</button>
+          {priorityFilter !== 'all' && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full">
+              {PRIORITY_ICONS[priorityFilter]} {priorityFilter}
+              <button onClick={() => setPriorityFilter('all')}><X size={10} /></button>
+            </span>
+          )}
+          <button onClick={clearFilters} className="text-amber-500 hover:underline ml-1">Clear all</button>
         </div>
       )}
 
@@ -265,6 +306,7 @@ function BoardColumn({
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   const overLimit = wipLimit && issues.length > wipLimit;
+  const totalPoints = issues.reduce((s, i) => s + (i.storyPoints || 0), 0);
 
   return (
     <div className="w-[280px] shrink-0 flex flex-col animate-slide-up" style={{ animationDelay: `${animDelay}ms` }}>
@@ -278,8 +320,11 @@ function BoardColumn({
           }`}>
             {issues.length}{wipLimit ? `/${wipLimit}` : ''}
           </span>
+          {totalPoints > 0 && (
+            <span className="text-[10px] text-text-tertiary font-mono">{totalPoints}sp</span>
+          )}
           {overLimit && (
-            <span className="text-[9px] text-error font-medium">WIP exceeded</span>
+            <span className="text-[9px] text-error font-medium">⚠ WIP</span>
           )}
         </div>
         <button
@@ -333,26 +378,31 @@ function SortableIssueCard({ issue, onClick }: { issue: Issue; onClick: () => vo
 
 function IssueCard({ issue, isDragging, onClick }: { issue: Issue; isDragging?: boolean; onClick?: () => void }) {
   const assignee = issue.assigneeId ? MOCK_USERS[issue.assigneeId] : null;
+  const isOverdue = issue.dueDate && new Date(issue.dueDate) < new Date() && issue.status !== 'done';
+  const isDueSoon = issue.dueDate && !isOverdue && issue.status !== 'done' &&
+    (new Date(issue.dueDate).getTime() - new Date().getTime()) < 3 * 24 * 60 * 60 * 1000;
 
   return (
     <div
       onClick={onClick}
-      className={`bg-card-bg rounded-lg p-3 border border-border cursor-pointer transition-all ${
-        isDragging ? 'shadow-lg rotate-1 scale-[1.03]' : 'hover:shadow-md hover:-translate-y-0.5'
+      className={`bg-card-bg rounded-lg p-3 border cursor-pointer transition-all group ${
+        isDragging
+          ? 'shadow-lg rotate-1 scale-[1.03] border-amber-400'
+          : 'border-border hover:shadow-md hover:-translate-y-0.5 hover:border-border-focus/40'
       }`}
     >
-      {/* Type + Key row */}
+      {/* Type + Key + Priority row */}
       <div className="flex items-center gap-1.5 mb-1.5">
-        <span style={{ color: ISSUE_TYPE_COLORS[issue.type] }}>
+        <span style={{ color: ISSUE_TYPE_COLORS[issue.type] }} className="shrink-0">
           {TYPE_ICONS[issue.type]}
         </span>
         <span className="text-[11px] font-mono text-text-tertiary">{issue.key}</span>
         <span className="flex-1" />
         <span
-          className="text-[10px] px-1 py-0.5 rounded"
+          className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
           style={{
             color: PRIORITY_COLORS[issue.priority] || '#8896A6',
-            backgroundColor: `${PRIORITY_COLORS[issue.priority] || '#8896A6'}15`
+            backgroundColor: `${PRIORITY_COLORS[issue.priority] || '#8896A6'}18`
           }}
           title={issue.priority}
         >
@@ -361,27 +411,45 @@ function IssueCard({ issue, isDragging, onClick }: { issue: Issue; isDragging?: 
       </div>
 
       {/* Summary */}
-      <p className="text-sm font-medium leading-snug line-clamp-2 mb-2.5">{issue.summary}</p>
+      <p className="text-sm font-medium leading-snug line-clamp-2 mb-2 group-hover:text-text-primary">{issue.summary}</p>
+
+      {/* Labels */}
+      {issue.labels && issue.labels.length > 0 && (
+        <div className="flex items-center gap-1 mb-2 flex-wrap">
+          {issue.labels.slice(0, 3).map(label => (
+            <span key={label} className="text-[9px] px-1.5 py-0.5 bg-forest-700/10 text-forest-700 rounded-full truncate max-w-[70px]">
+              {label}
+            </span>
+          ))}
+          {issue.labels.length > 3 && (
+            <span className="text-[9px] text-text-tertiary">+{issue.labels.length - 3}</span>
+          )}
+        </div>
+      )}
 
       {/* Bottom row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           {issue.storyPoints != null && issue.storyPoints > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 bg-forest-700/15 text-forest-700 rounded font-medium">
-              {issue.storyPoints} SP
+            <span className="text-[10px] px-1.5 py-0.5 bg-forest-700/12 text-forest-700 rounded-full font-semibold">
+              {issue.storyPoints}
             </span>
           )}
-          {issue.labels?.slice(0, 2).map(label => (
-            <span key={label} className="text-[10px] px-1.5 py-0.5 bg-page-bg text-text-tertiary rounded truncate max-w-[60px]">{label}</span>
-          ))}
-          {issue.labels && issue.labels.length > 2 && (
-            <span className="text-[10px] text-text-tertiary">+{issue.labels.length - 2}</span>
+          {issue.dueDate && (
+            <span className={`text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 rounded-full ${
+              isOverdue ? 'bg-error/10 text-error font-medium' :
+              isDueSoon ? 'bg-warning/10 text-warning font-medium' :
+              'text-text-tertiary'
+            }`}>
+              <Calendar size={9} />
+              {new Date(issue.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
           )}
         </div>
         <div className="flex items-center gap-1.5">
           {assignee ? (
             <div
-              className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0"
+              className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold shrink-0 ring-2 ring-card-bg"
               style={{ backgroundColor: assignee.color }}
               title={assignee.name}
             >

@@ -193,6 +193,32 @@ h1, h2, h3, h4, h5, h6 {
   background-size: 200px 100%;
 }
 
+/* Dark mode form elements */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: var(--color-card-bg);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: var(--color-border-focus);
+}
+
+/* Dark mode dropdown option text */
+.dark option {
+  background-color: var(--color-card-bg);
+  color: var(--color-text-primary);
+}
+
 /* Focus ring */
 :focus-visible {
   outline: 2px solid var(--color-border-focus);

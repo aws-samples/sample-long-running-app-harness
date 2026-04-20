@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useIssues, useSprints, useProject, useUpdateIssue, useCreateSprint, useUpdateSprint } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
 import { ISSUE_TYPE_COLORS, PRIORITY_COLORS, PRIORITY_ICONS } from '../lib/utils';
-import { Bookmark, Bug, CheckSquare, Zap, ListTodo, Plus, ChevronDown, ChevronRight, GripVertical, Play, CheckCircle2 } from 'lucide-react';
+import { Bookmark, Bug, CheckSquare, Zap, ListTodo, Plus, ChevronDown, ChevronRight, GripVertical, Play, CheckCircle2, User } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Issue, Sprint } from '@canopy/shared';
 
@@ -13,6 +13,23 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   Bug: <Bug size={14} />,
   Task: <CheckSquare size={14} />,
   'Sub-task': <ListTodo size={14} />,
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  todo: 'To Do', in_progress: 'In Progress', in_review: 'In Review', done: 'Done',
+};
+const STATUS_BADGE_COLORS: Record<string, string> = {
+  todo: 'bg-text-tertiary/15 text-text-secondary',
+  in_progress: 'bg-info/15 text-info',
+  in_review: 'bg-warning/15 text-warning',
+  done: 'bg-success/15 text-success',
+};
+const MOCK_USERS: Record<string, { name: string; initials: string; color: string }> = {
+  'user-1': { name: 'Alice Chen', initials: 'AC', color: '#1B4332' },
+  'user-2': { name: 'Bob Smith', initials: 'BS', color: '#2D6A4F' },
+  'user-3': { name: 'Carol Davis', initials: 'CD', color: '#52796F' },
+  'user-4': { name: 'Dan Wilson', initials: 'DW', color: '#D4A373' },
+  'user-5': { name: 'Eve Johnson', initials: 'EJ', color: '#BC6C25' },
 };
 
 export default function BacklogView() {
@@ -266,6 +283,7 @@ function IssueRow({
   onMoveToSprint: (sprintId: string) => void; moveLabel?: string;
 }) {
   const [showMenu, setShowMenu] = useState(false);
+  const assignee = issue.assigneeId ? MOCK_USERS[issue.assigneeId] : null;
 
   return (
     <div
@@ -278,8 +296,12 @@ function IssueRow({
       </span>
       <span className="text-xs font-mono text-text-tertiary shrink-0 w-16">{issue.key}</span>
       <span className="text-sm flex-1 truncate">{issue.summary}</span>
+      {/* Status badge */}
+      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ${STATUS_BADGE_COLORS[issue.status] || 'bg-page-bg text-text-tertiary'}`}>
+        {STATUS_LABELS[issue.status] || issue.status}
+      </span>
       {issue.storyPoints && (
-        <span className="text-[10px] px-1.5 py-0.5 bg-forest-700/15 text-forest-700 rounded font-medium shrink-0">{issue.storyPoints}</span>
+        <span className="text-[10px] px-1.5 py-0.5 bg-forest-700/12 text-forest-700 rounded-full font-semibold shrink-0">{issue.storyPoints}</span>
       )}
       <span
         className="text-xs shrink-0"
@@ -288,6 +310,19 @@ function IssueRow({
       >
         {PRIORITY_ICONS[issue.priority]}
       </span>
+      {/* Assignee avatar */}
+      {assignee ? (
+        <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px] font-bold shrink-0"
+          style={{ backgroundColor: assignee.color }}
+          title={assignee.name}
+        >
+          {assignee.initials}
+        </div>
+      ) : (
+        <div className="w-5 h-5 rounded-full flex items-center justify-center bg-page-bg shrink-0" title="Unassigned">
+          <User size={10} className="text-text-tertiary" />
+        </div>
+      )}
       {sprints.length > 0 && (
         <div className="relative" onClick={e => e.stopPropagation()}>
           <button
