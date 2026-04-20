@@ -81,7 +81,9 @@ export default function KeyboardShortcutsModal() {
                             {key}
                           </kbd>
                           {i < shortcut.keys.length - 1 && shortcut.keys.length > 1 && key !== '←' && key !== '↑' && (
-                            <span className="text-text-tertiary text-[10px] mx-0.5">+</span>
+                            <span className="text-text-tertiary text-[10px] mx-0.5">
+                              {key === 'G' ? 'then' : '+'}
+                            </span>
                           )}
                         </span>
                       ))}
