@@ -11,5 +11,8 @@
     "dev": "npm run dev --workspace=frontend",
     "build": "npm run build --workspace=frontend",
     "test": "echo 'Run tests in individual workspaces'"
+  },
+  "devDependencies": {
+    "playwright": "^1.59.1"
   }
 }
