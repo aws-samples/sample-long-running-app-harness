@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useSprints, useIssues, useProject, useUpdateSprint } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
 import { ISSUE_TYPE_COLORS, formatDate } from '../lib/utils';
@@ -21,6 +21,7 @@ export default function SprintsView() {
   const { data: issues } = useIssues(projectId);
   const updateSprint = useUpdateSprint();
   const { dispatch } = useApp();
+  const navigate = useNavigate();
 
   const activeSprints = sprints?.filter(s => s.status === 'active') || [];
   const completedSprints = sprints?.filter(s => s.status === 'completed') || [];
@@ -51,7 +52,13 @@ export default function SprintsView() {
             <Play size={24} className="text-info" />
           </div>
           <h3 className="font-display text-lg font-semibold mb-2">No active sprints</h3>
-          <p className="text-sm text-text-secondary">Start a sprint from the Backlog view to see it here</p>
+          <p className="text-sm text-text-secondary mb-4">Start a sprint from the Backlog view to see it here</p>
+          <button
+            onClick={() => navigate(`/project/${projectId}/backlog`)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors font-medium text-sm btn-press"
+          >
+            Go to Backlog
+          </button>
         </div>
       ) : (
         <div className="space-y-6">
