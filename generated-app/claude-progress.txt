@@ -1,6 +1,6 @@
 CANOPY PROJECT MANAGEMENT APP - PROGRESS UPDATE
 =================================================
-Last Updated: 2026-04-20 (Session 5 - UI Polish & Dark Mode)
+Last Updated: 2026-04-20 (Session 5 - UI Polish & Dark Mode - FINAL)
 
 ## STATUS: ALL PHASES COMPLETE + ALL POLISH COMPLETE
 All 4 phases are complete. All phase gates pass. 51 e2e tests pass. 16 CDK tests pass.
@@ -11,126 +11,76 @@ https://q4rf5i4bal.execute-api.us-east-1.amazonaws.com
 ## FRONTEND ENV
 VITE_API_URL=https://q4rf5i4bal.execute-api.us-east-1.amazonaws.com (set in frontend/.env)
 
-## ARCHITECTURE
-- Monorepo: shared/ | infrastructure/ | backend/ (inline in CDK) | frontend/
-- Shared: Zod schemas, TypeScript types, endpoint map
-- Infrastructure: CDK stack (DynamoDB, Lambda, API GW, S3/CloudFront)
-- Backend: Single Lambda handler with route matching
-- Frontend: React 18 + TypeScript + Vite 6 + Tailwind CSS v4 + React Query
-
 ## PHASE GATES (ALL PASSING)
 1. shared/ compiles: `cd shared && npx tsc --noEmit` ✅
 2. infrastructure/ synths: `cd infrastructure && npx cdk synth` ✅
 3. infrastructure/ tests: 16/16 pass (`cd infrastructure && npm test`) ✅
-4. frontend/ TypeScript: `cd frontend && npx tsc --noEmit` ✅
-5. frontend/ builds: `npm run build` ✅ (~274KB gzipped)
-6. API endpoints respond: `curl -s $API_URL/projects` returns JSON ✅
-7. 51/51 e2e tests pass: `npx playwright test e2e-tests/` ✅
+4. frontend/ builds: `cd frontend && npm run build` ✅ (~274KB gzipped)
+5. API endpoints respond: `curl -s $API_URL/projects` returns JSON ✅
+6. 51/51 e2e tests pass: `npx playwright test e2e-tests/` ✅
 
-## SESSION 5 CHANGES (UI Polish & Dark Mode)
+## SESSION 5 COMMITS
+1. fab81a6 - feat: add delete confirmation dialog and dark mode page tests
+2. bd8ba78 - fix: improve board filter indicators for dark mode compatibility
+3. 4c2ddc0 - fix: polish search highlight and keyboard shortcuts display
+4. e0bca51 - docs: update progress notes for session 5 polish changes
+5. f8910e2 - feat: add M keyboard shortcut for assign-to-me in issue detail panel
+6. 6402985 - fix: improve copy button to copy issue key instead of URL
 
-### Issue Detail Panel - Delete Confirmation Dialog
-- Replaced direct `handleDelete()` call with in-page confirmation dialog
-- Shows overlay with backdrop blur, styled modal with issue key and summary
-- Matches app theme with error-colored accent, cancel/confirm buttons
-- No browser-native confirm() calls anywhere in the codebase
+## SESSION 5 KEY CHANGES
 
-### Create Issue Modal - Enhanced
+### Delete Confirmation Dialog (IssueDetailPanel)
+- In-page overlay confirmation with backdrop blur
+- Shows issue key and summary, cancel/delete buttons
+- Uses isPending state for loading indicator
+
+### Dark Mode Polish
+- Board filter indicators: replaced amber-100/amber-700 with alpha-based amber-500/15 and amber-600
+- Search highlight marks: amber-400/30 for dark mode compatibility
+- All 6 major pages verified in dark mode via e2e tests
+
+### Keyboard Shortcuts
+- Fixed ? key (removed incorrect !e.shiftKey condition)
+- G-prefix navigation: G+B board, G+L backlog, G+R roadmap, G+S settings
+- M key in issue detail panel assigns to current user
+- Shortcuts modal shows "then" for G-prefix (not "+")
+
+### Issue Detail Enhancements
+- Copy button copies issue key (e.g., EAT-1) to clipboard instead of URL
+- handleAssignToMe() function for M keyboard shortcut
+
+### Create Issue Modal
 - Added Assignee dropdown (MOCK_USERS)
 - Added Due Date input field
-- maxLength={255} on summary input
-- Platform-aware Ctrl/⌘ shortcut tip
+- maxLength={255} on summary
+- Platform-aware shortcut tip (Ctrl vs Cmd)
 
-### Project Icons - Lucide React
-- Replaced all emoji-based icons with Lucide React SVG components
-- 12 icons: TreePine, Rocket, Zap, Flame, Target, Wrench, BarChart3, Construction, Lightbulb, Palette, Smartphone, Lock
-- Used in CreateProject, Dashboard, Header, SettingsView
-- Exported `PROJECT_ICONS` and `getProjectIconComponent()` for reuse
+### Project Icons
+- All emoji icons replaced with Lucide React SVGs
+- 12 icons available: TreePine, Rocket, Zap, Flame, etc.
+- Shared export for reuse across Dashboard, Header, Settings
 
 ### Shared Mock Users
-- Created `frontend/src/lib/users.ts` with consolidated MOCK_USERS
-- Eliminated duplication across BoardView, BacklogView, IssueDetailPanel
-- Exports: MOCK_USERS, MOCK_USERS_MAP, CURRENT_USER
+- Consolidated in frontend/src/lib/users.ts
+- Eliminated duplication across 4 components
 
-### Keyboard Shortcuts Enhanced
-- Fixed `?` keyboard shortcut (removed incorrect `!e.shiftKey`)
-- Added G-prefix navigation (G+B board, G+L backlog, G+R roadmap, G+S settings)
-- Keyboard shortcuts modal shows "then" for G-prefix (G then B vs ⌘+K)
-
-### Board View Polish
-- Added "Lowest" to priority filter
-- Fixed filter indicator colors for dark mode (amber-500/10, amber-500/15)
-- Filter badge pills use alpha-based colors for theme compatibility
-
-### Search Modal Polish
-- Highlight color changed to amber-400/30 for dark mode compatibility
-
-### Dark Mode - Comprehensive e2e Tests
-- Added dark-mode-pages.spec.ts with 6 tests covering all major pages
-- All dark mode pages verified: dashboard, board, backlog, reports, settings, create project
-- Dark mode form elements, cards, charts all render correctly
-
-## PREVIOUS SESSION CHANGES
-
-### Session 4 - Board View Enhancement
-- Priority filter dropdown, story point totals per column
-- Due date display (overdue/soon indicators), label pills on cards
-- Inline quick-add feature: click + on any column
-- Status badge pills in backlog, assignee avatars
-- Due date picker with overdue highlighting in issue detail
-- Time tracking section: estimate input, time spent, progress bar
-- Epic child issues: story point aggregation
-- Enhanced search modal: keyboard nav, text highlighting, status indicators
-- Components page: full CRUD with color picker
-- Labels page: full CRUD with color picker
-- Page transition animations, scroll-to-top on navigation
-
-### Session 3 - Issue Detail & Modals
-- Two-column issue detail layout with sidebar
-- Assignee/Reporter/Priority/Sprint/Epic/Labels in detail panel
-- Comments/History tabs
-- Enhanced create issue modal with sprint/epic/labels
-- Keyboard shortcuts modal (? key)
-- Settings view with 4 tabs
-- Dashboard with gradient text, quick actions
-- Roadmap view with epics, progress bars
-- Reports view with charts
-- Create project with live preview
-
-## ALL PAGES (Working)
-1. Dashboard - Hero, stats, quick actions, project cards, tips
-2. Board View - Kanban DnD, filters, quick-add, WIP limits
-3. Backlog View - Sprint sections, start/complete, move-to-sprint
-4. Roadmap View - Epic timeline, progress bars, SP aggregation
-5. Reports View - 5 stat cards, pie/bar/area charts, completion rate
-6. Settings View - 4 tabs, export/import, delete with confirmation
-7. Labels View - Full CRUD, color picker, usage counts
+## ALL PAGES (Working and Polished)
+1. Dashboard - Hero gradient text, stats, quick actions, project cards, tips
+2. Board View - Kanban DnD, filters, quick-add, WIP limits, priority badges
+3. Backlog View - Sprint sections, start/complete, move-to-sprint, inline create
+4. Roadmap View - Epic timeline, progress bars, SP aggregation, linked issues
+5. Reports View - 5 stat cards, pie/bar/area charts, completion rate bar
+6. Settings View - 4 tabs, export/import, delete with in-page confirmation
+7. Labels View - Full CRUD, color picker, search, usage counts
 8. Components View - Full CRUD, lead assignment, stats
 9. Active Sprints - Progress cards, issue lists, complete action
-10. Create Project - Form with live preview, Lucide icon picker
+10. Create Project - Form with live preview, Lucide icon picker, color picker
 11. 404 Page - Clean with go back / dashboard buttons
 
-## API ENDPOINTS (all working)
-- GET /projects, POST /projects
-- GET/PUT/DELETE /projects/:id
-- GET/POST /projects/:id/issues
-- GET/PUT/DELETE /issues/:id
-- POST /issues/bulk-update
-- GET/POST /projects/:id/sprints, PUT /sprints/:id
-- GET/PUT /projects/:id/board
-- GET/POST /issues/:id/comments
-- GET /search?q=term
-- GET /health
-
-## TESTS STATUS
-- tests.json: 50 tests defined, all passes: true
-- CDK tests: 16/16 pass
-- E2E tests: 51/51 pass
-- Categories: shared (5), infrastructure (6), backend (7+1), functional (24), style (8)
-
 ## DESIGN FUSION
-- Everforest color palette: forest greens + amber accents
+- Everforest color palette: forest greens (#1B4332, #52796F) + amber accents (#D4A373, #BC6C25)
 - Typography: Space Grotesk (display), DM Sans (body), JetBrains Mono (code)
-- CSS custom properties for light/dark theme
-- Micro-interactions: gradient text, card glow, spring transitions, staggered entries
+- CSS custom properties for consistent light/dark theming
 - Alpha-based colors (amber-500/10, bg-info/10) for consistent light/dark rendering
+- Micro-interactions: gradient text, card glow, spring transitions, staggered entries
+- Animations: fade-in, slide-up, scale-in, slide-in-right, skeleton shimmer
