@@ -19,12 +19,16 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false,
     rollupOptions: {
-      onwarn(warning, warn) {
-        // Suppress unresolved import warnings for hoisted deps
-        if (warning.code === 'UNRESOLVED_IMPORT') return;
-        warn(warning);
+      maxParallelFileOps: 20,
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          query: ['@tanstack/react-query'],
+          charts: ['recharts'],
+          dnd: ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
+        },
       },
     },
   },
