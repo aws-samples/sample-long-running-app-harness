@@ -76,7 +76,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     document.documentElement.classList.toggle('dark', state.theme === 'dark');
   }, [state.theme]);
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts — G-key navigation prefix
+  const gPrefixRef = React.useRef(false);
+  const gTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
+
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       // Escape closes in priority order
@@ -104,21 +107,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
 
+      // Cmd/Ctrl shortcuts
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         dispatch({ type: 'TOGGLE_SEARCH' });
+        return;
       }
       if ((e.metaKey || e.ctrlKey) && e.key === '[') {
         e.preventDefault();
         dispatch({ type: 'TOGGLE_SIDEBAR' });
+        return;
       }
+
+      // G-prefix navigation shortcuts (G then B/L/R/S)
+      if (gPrefixRef.current) {
+        gPrefixRef.current = false;
+        clearTimeout(gTimeoutRef.current);
+        const projectId = state.currentProjectId;
+        if (projectId) {
+          if (e.key === 'b') { window.location.hash = ''; window.location.pathname = `/project/${projectId}/board`; return; }
+          if (e.key === 'l') { window.location.pathname = `/project/${projectId}/backlog`; return; }
+          if (e.key === 'r') { window.location.pathname = `/project/${projectId}/roadmap`; return; }
+          if (e.key === 's') { window.location.pathname = `/project/${projectId}/settings`; return; }
+        }
+        return;
+      }
+      if (e.key === 'g' && !e.metaKey && !e.ctrlKey) {
+        gPrefixRef.current = true;
+        gTimeoutRef.current = setTimeout(() => { gPrefixRef.current = false; }, 800);
+        return;
+      }
+
       if (e.key === 'c' && !e.metaKey && !e.ctrlKey) {
         dispatch({ type: 'SET_CREATE_ISSUE', show: true });
       }
-      if (e.key === '?' && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
-        dispatch({ type: 'SET_SHORTCUTS_MODAL', show: true });
+      // ? key (which is Shift+/ on most keyboards)
+      if (e.key === '?') {
+        dispatch({ type: 'SET_SHORTCUTS_MODAL', show: !state.showShortcutsModal });
       }
-      if (e.key === '/' && !e.metaKey && !e.ctrlKey) {
+      if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
         e.preventDefault();
         const filterInput = document.querySelector('input[placeholder*="Filter"]') as HTMLInputElement;
         if (filterInput) filterInput.focus();
@@ -126,8 +153,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [state.showShortcutsModal, state.showSearchModal, state.showCreateIssueModal, state.selectedIssueId]);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(gTimeoutRef.current);
+    };
+  }, [state.showShortcutsModal, state.showSearchModal, state.showCreateIssueModal, state.selectedIssueId, state.currentProjectId]);
 
   return <AppContext.Provider value={{ state, dispatch }}>{children}</AppContext.Provider>;
 }
