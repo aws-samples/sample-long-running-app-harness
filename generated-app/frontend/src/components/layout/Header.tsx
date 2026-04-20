@@ -9,6 +9,7 @@ export default function Header() {
   const { data: projects } = useProjects();
   const navigate = useNavigate();
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
+  const [projectSearch, setProjectSearch] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const currentProject = projects?.find(p => p.id === state.currentProjectId);
@@ -17,6 +18,7 @@ export default function Header() {
     function handleClick(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setShowProjectDropdown(false);
+        setProjectSearch('');
       }
     }
     document.addEventListener('mousedown', handleClick);
@@ -60,8 +62,13 @@ export default function Header() {
         >
           {currentProject ? (
             <>
-              <span className="w-5 h-5 rounded bg-amber-500 flex items-center justify-center text-[10px] font-bold">{currentProject.key?.slice(0,2)}</span>
-              <span className="font-medium hidden md:inline">{currentProject.name}</span>
+              <span
+                className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold"
+                style={{ backgroundColor: currentProject.color || '#D4A373' }}
+              >
+                {currentProject.icon || currentProject.key?.slice(0,2)}
+              </span>
+              <span className="font-medium hidden md:inline max-w-[180px] truncate">{currentProject.name}</span>
             </>
           ) : (
             <span className="text-white/70">Select Project</span>
@@ -74,13 +81,15 @@ export default function Header() {
             <div className="p-2 border-b border-border">
               <input
                 type="text"
+                value={projectSearch}
+                onChange={e => setProjectSearch(e.target.value)}
                 placeholder="Search projects..."
                 className="w-full px-3 py-1.5 text-sm text-text-primary bg-page-bg rounded-md border border-border focus:border-border-focus focus:outline-none"
                 autoFocus
               />
             </div>
             <div className="max-h-60 overflow-y-auto py-1">
-              {projects?.filter(p => !p.isArchived).map(project => (
+              {projects?.filter(p => !p.isArchived && (!projectSearch || p.name.toLowerCase().includes(projectSearch.toLowerCase()) || p.key?.toLowerCase().includes(projectSearch.toLowerCase()))).map(project => (
                 <button
                   key={project.id}
                   onClick={() => {
@@ -96,11 +105,11 @@ export default function Header() {
                     className="w-7 h-7 rounded flex items-center justify-center text-[11px] font-bold text-white shrink-0"
                     style={{ backgroundColor: project.color || '#52796F' }}
                   >
-                    {project.key?.slice(0,2)}
+                    {project.icon || project.key?.slice(0,2)}
                   </span>
                   <div className="text-left min-w-0">
                     <div className="font-medium truncate">{project.name}</div>
-                    <div className="text-text-tertiary text-xs">{project.key}</div>
+                    <div className="text-text-tertiary text-xs font-mono">{project.key}</div>
                   </div>
                 </button>
               ))}
