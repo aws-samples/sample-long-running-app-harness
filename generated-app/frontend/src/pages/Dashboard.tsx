@@ -1,11 +1,12 @@
 import { useProjects } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
-import { TreePine, Plus, FolderOpen, ArrowRight } from 'lucide-react';
+import { TreePine, Plus, FolderOpen, ArrowRight, AlertTriangle } from 'lucide-react';
 import { formatRelativeDate } from '../lib/utils';
+import { isApiConfigured } from '../api/client';
 
 export default function Dashboard() {
-  const { data: projects, isLoading } = useProjects();
+  const { data: projects, isLoading, error } = useProjects();
   const { dispatch } = useApp();
   const navigate = useNavigate();
 
@@ -18,6 +19,25 @@ export default function Dashboard() {
 
   return (
     <div className="animate-fade-in">
+      {/* API warning */}
+      {!isApiConfigured() && (
+        <div className="mb-4 px-4 py-3 bg-warning/10 border border-warning/30 rounded-lg flex items-center gap-3 animate-slide-in-up">
+          <AlertTriangle size={18} className="text-warning shrink-0" />
+          <p className="text-sm text-text-secondary">
+            <strong className="text-text-primary">API not configured.</strong> Set <code className="font-mono text-xs bg-page-bg px-1 py-0.5 rounded">VITE_API_URL</code> in <code className="font-mono text-xs bg-page-bg px-1 py-0.5 rounded">frontend/.env</code> and restart the dev server.
+          </p>
+        </div>
+      )}
+
+      {error && isApiConfigured() && (
+        <div className="mb-4 px-4 py-3 bg-error/10 border border-error/30 rounded-lg flex items-center gap-3 animate-slide-in-up">
+          <AlertTriangle size={18} className="text-error shrink-0" />
+          <p className="text-sm text-text-secondary">
+            <strong className="text-text-primary">Failed to load projects.</strong> {(error as Error).message}
+          </p>
+        </div>
+      )}
+
       {/* Hero section */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
