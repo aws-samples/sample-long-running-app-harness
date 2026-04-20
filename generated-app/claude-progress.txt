@@ -1,6 +1,6 @@
 CANOPY PROJECT MANAGEMENT APP - PROGRESS UPDATE
 =================================================
-Last Updated: 2026-04-20 (Session 3 - UI Polish & Enhancement)
+Last Updated: 2026-04-20 (Session 4 - Further UI Enhancement & CRUD Features)
 
 ## STATUS: ALL PHASES COMPLETE + MAJOR UI POLISH
 All 4 phases are complete. All phase gates pass. 43 e2e tests pass. 16 CDK tests pass.
@@ -33,31 +33,80 @@ VITE_API_URL=https://q4rf5i4bal.execute-api.us-east-1.amazonaws.com (set in fron
 - The actual infrastructure (Lambda, DynamoDB, API GW) is fully operational
 - CDK snapshot test normalized to handle S3Key hash differences across environments
 
-## SESSION 3 CHANGES (UI Polish & Enhancement)
+## SESSION 4 CHANGES (Further Enhancement & CRUD)
+
+### Board View (BoardView.tsx) - Enhanced
+- Added priority filter dropdown (in addition to type filter)
+- Story point totals per column header
+- Enhanced issue cards with due date display (overdue/soon indicators)
+- Label pills on cards with forest-green styling
+- Better priority badge (pill shape with background)
+- Inline quick-add feature: click + on any column, type summary, Enter to create
+- Issues created inline get the column's status automatically
+
+### Backlog View (BacklogView.tsx) - Enhanced
+- Added status badge pills (To Do/In Progress/In Review/Done) with colored backgrounds
+- Added assignee avatar display on each row
+- Better story points styling (rounded-full)
+
+### Issue Detail Panel (IssueDetailPanel.tsx) - Enhanced
+- Due date picker with overdue highlighting (red border + "Overdue" text)
+- Time tracking section: estimate input (parseable "2h 30m"), time spent display, progress bar
+- Epic child issues: story point aggregation header (done SP / total SP), individual SP badges
+
+### Search Modal (SearchModal.tsx) - Enhanced
+- Keyboard navigation: arrow keys up/down, Enter to select
+- Text highlighting (highlightMatch function with amber marker)
+- Priority and status indicators on issue results
+- Issue count in section headers
+- Footer hint bar (Navigate/Select/Close shortcuts)
+- CornerDownLeft icon on selected item
+
+### Components Page (ComponentsView.tsx) - Full CRUD
+- Create new components with name, description, lead, and color picker
+- Edit existing components inline with form
+- Delete with confirmation dialog
+- Search/filter functionality
+- Stats cards (total, linked issues, active)
+- Issue count per component (matches label/summary)
+- localStorage persistence per project
+
+### Labels Page (LabelsView.tsx) - Full CRUD
+- Create new labels with name and color picker, live preview
+- Edit inline with color selection
+- Delete with confirmation
+- Search/filter
+- Stats cards (total, usage count, active)
+- Colored label preview pills
+- localStorage persistence per project
+
+### Active Sprints (SprintsView.tsx) - Enhanced
+- Added "Go to Backlog" button when no active sprints
+
+### Dark Mode (index.css) - Enhanced
+- Dark mode form elements (input, textarea, select) with proper backgrounds
+- Dark mode placeholder text color
+- Dark mode focus states
+- Dark mode dropdown option elements
+- Dark mode card-glow effect
+
+## PREVIOUS SESSION CHANGES (Session 3)
 
 ### Enhanced Issue Detail Panel (IssueDetailPanel.tsx)
 - Two-column layout: main content + right sidebar
-- Assignee dropdown with mock users
-- Reporter display, Priority select, Editable story points
+- Assignee dropdown, Reporter display, Priority select
 - Sprint selector, Epic linker, Labels multi-select
-- Type changer dropdown, Comments/History tabs
-- Child issues section for Epics with progress bar
-- Sub-tasks section with progress
+- Comments/History tabs, Child issues for Epics
 
 ### Enhanced Create Issue Modal (CreateIssueModal.tsx)
 - Sprint selection, Epic selection, Labels multi-select
-- Cmd+Enter shortcut, Tip text
+- Cmd+Enter shortcut, "Create another" toggle
 
-### Keyboard Shortcuts Modal (KeyboardShortcutsModal.tsx) - NEW
+### Keyboard Shortcuts Modal (KeyboardShortcutsModal.tsx)
 - 4 sections: Global, Navigation, Issue Detail, Board
 - Triggered by ? key
 
-### Enhanced Board View (BoardView.tsx)
-- Color-coded column headers, Priority badges, Assignee avatars
-- Type filter, Active filter indicator, "+" create button
-- Staggered animations, WIP limit indicator
-
-### Enhanced Settings View (SettingsView.tsx) - COMPLETE REWRITE
+### Enhanced Settings View (SettingsView.tsx)
 - Tabbed: General, Workflow, Data, Danger Zone
 - Export/Import JSON, Board columns display, Project stats
 
@@ -70,18 +119,24 @@ VITE_API_URL=https://q4rf5i4bal.execute-api.us-east-1.amazonaws.com (set in fron
 ### Enhanced Reports View (ReportsView.tsx)
 - 5 stat cards, Completion rate bar, Creation trend chart, Legends
 
-### Enhanced Labels/Components Views
-- Search/filter, Stats cards, Issue counts, Colored badges/icons
-
-### Enhanced Create Project (CreateProject.tsx)
+### Create Project (CreateProject.tsx)
 - Live preview card, Emoji icon picker, Two-column layout
 
 ### CSS Polish (index.css)
 - Button press, Gradient text, Pulse animation, Progress fill
 - Card glow, Extended stagger, Spring transition, Selection color
 
-### Test Fixes
-- All 43 e2e tests updated and passing
+## ALL PAGES (Working)
+1. Dashboard - Hero, stats, quick actions, project cards, tips
+2. Board View - Kanban DnD, filters, quick-add, WIP limits
+3. Backlog View - Sprint sections, start/complete, move-to-sprint
+4. Roadmap View - Epic timeline, progress bars, SP aggregation
+5. Reports View - 5 stat cards, pie/bar/area charts, completion rate
+6. Settings View - 4 tabs, export/import, delete
+7. Labels View - Full CRUD, color picker, usage counts
+8. Components View - Full CRUD, lead assignment, stats
+9. Active Sprints - Progress cards, issue lists, complete action
+10. Create Project - Form with live preview, icon/color picker
 
 ## API ENDPOINTS (all working)
 - GET /projects, POST /projects
