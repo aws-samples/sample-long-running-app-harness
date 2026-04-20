@@ -74,7 +74,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Keyboard shortcuts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      // Don't trigger shortcuts when typing in inputs
+      // Escape always works
+      if (e.key === 'Escape') {
+        dispatch({ type: 'SELECT_ISSUE', id: null });
+        dispatch({ type: 'SET_CREATE_ISSUE', show: false });
+        dispatch({ type: 'SET_SEARCH', show: false });
+        return;
+      }
+
+      // Don't trigger other shortcuts when typing in inputs
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
 
@@ -88,11 +96,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       if (e.key === 'c' && !e.metaKey && !e.ctrlKey) {
         dispatch({ type: 'SET_CREATE_ISSUE', show: true });
-      }
-      if (e.key === 'Escape') {
-        dispatch({ type: 'SELECT_ISSUE', id: null });
-        dispatch({ type: 'SET_CREATE_ISSUE', show: false });
-        dispatch({ type: 'SET_SEARCH', show: false });
       }
     }
 
