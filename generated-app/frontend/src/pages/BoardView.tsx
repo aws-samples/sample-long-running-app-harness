@@ -182,7 +182,7 @@ export default function BoardView() {
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-1.5 h-8 px-3 text-sm border rounded-md transition-colors ${
-                hasActiveFilters ? 'border-amber-400 bg-amber-50 text-amber-700' : 'border-border hover:bg-hover-bg'
+                hasActiveFilters ? 'border-amber-400 bg-amber-500/10 text-amber-600' : 'border-border hover:bg-hover-bg'
               }`}
             >
               <Filter size={14} /> Filters
@@ -246,13 +246,13 @@ export default function BoardView() {
         <div className="flex items-center gap-2 mb-3 text-xs text-text-secondary animate-slide-in-up">
           <span>Showing {filteredIssues.length} of {issues?.length || 0} issues</span>
           {typeFilter !== 'all' && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-500/15 text-amber-600 rounded-full">
               <span style={{ color: ISSUE_TYPE_COLORS[typeFilter] }}>{TYPE_ICONS[typeFilter]}</span> {typeFilter}
               <button onClick={() => setTypeFilter('all')}><X size={10} /></button>
             </span>
           )}
           {priorityFilter !== 'all' && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-500/15 text-amber-600 rounded-full">
               {PRIORITY_ICONS[priorityFilter]} {priorityFilter}
               <button onClick={() => setPriorityFilter('all')}><X size={10} /></button>
             </span>
