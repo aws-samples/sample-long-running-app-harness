@@ -91,7 +91,7 @@ export default function ReportsView() {
                 <Pie data={issuesByType} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
                   {issuesByType.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                 </Pie>
-                <Tooltip />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--color-card-bg)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-text-primary)' }} />
               </PieChart>
             </ResponsiveContainer>
           ) : (
@@ -108,7 +108,7 @@ export default function ReportsView() {
                 <Pie data={issuesByPriority} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
                   {issuesByPriority.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                 </Pie>
-                <Tooltip />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--color-card-bg)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-text-primary)' }} />
               </PieChart>
             </ResponsiveContainer>
           ) : (
@@ -122,10 +122,10 @@ export default function ReportsView() {
           {issuesByStatus.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={issuesByStatus}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E1DB" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--color-card-bg)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-text-primary)' }} />
                 <Bar dataKey="value" fill="#52796F" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -140,10 +140,10 @@ export default function ReportsView() {
           {velocityData.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={velocityData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E1DB" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--color-card-bg)', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-text-primary)' }} />
                 <Legend />
                 <Bar dataKey="committed" fill="#D4A373" name="Committed" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="completed" fill="#40916C" name="Completed" radius={[4, 4, 0, 0]} />
