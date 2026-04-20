@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import CreateIssueModal from '../CreateIssueModal';
@@ -12,6 +12,7 @@ import { Toaster } from 'sonner';
 export default function Layout() {
   const { state, dispatch } = useApp();
   const location = useLocation();
+  const mainRef = useRef<HTMLElement>(null);
 
   // Auto-detect project ID from URL path
   useEffect(() => {
@@ -21,13 +22,18 @@ export default function Layout() {
     }
   }, [location.pathname, state.currentProjectId, dispatch]);
 
+  // Scroll to top on route change
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+  }, [location.pathname]);
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto bg-page-bg">
-          <div className="max-w-[1400px] mx-auto p-6">
+        <main ref={mainRef} className="flex-1 overflow-y-auto bg-page-bg">
+          <div className="max-w-[1400px] mx-auto p-6 page-transition">
             <Outlet />
           </div>
         </main>
