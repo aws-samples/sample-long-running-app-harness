@@ -1,7 +1,8 @@
+import { useMemo } from 'react';
 import { useProjects } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
-import { TreePine, Plus, FolderOpen, ArrowRight, AlertTriangle } from 'lucide-react';
+import { TreePine, Plus, FolderOpen, ArrowRight, AlertTriangle, Keyboard, BarChart3, Layout, ListChecks } from 'lucide-react';
 import { formatRelativeDate } from '../lib/utils';
 import { isApiConfigured } from '../api/client';
 
@@ -10,7 +11,13 @@ export default function Dashboard() {
   const { dispatch } = useApp();
   const navigate = useNavigate();
 
-  const activeProjects = projects?.filter(p => !p.isArchived) || [];
+  const activeProjects = useMemo(() =>
+    (projects?.filter(p => !p.isArchived) || [])
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()),
+    [projects]
+  );
+
+  const totalIssues = activeProjects.reduce((s, p) => s + (p.issueCounter || 0), 0);
 
   function selectProject(id: string) {
     dispatch({ type: 'SET_PROJECT', id });
@@ -54,9 +61,55 @@ export default function Dashboard() {
       {/* Quick stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 stagger-children">
         <StatCard label="Active Projects" value={String(activeProjects.length)} color="bg-forest-700" />
-        <StatCard label="Total Issues" value={String(activeProjects.reduce((s, p) => s + (p.issueCounter || 0), 0))} color="bg-info" />
-        <StatCard label="Last Updated" value={activeProjects.length > 0 ? formatRelativeDate(activeProjects.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0].updatedAt) : 'N/A'} color="bg-amber-500" />
+        <StatCard label="Total Issues" value={String(totalIssues)} color="bg-info" />
+        <StatCard
+          label="Last Updated"
+          value={activeProjects.length > 0 ? formatRelativeDate(activeProjects[0].updatedAt) : 'N/A'}
+          color="bg-amber-500"
+        />
       </div>
+
+      {/* Quick actions */}
+      {activeProjects.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+          <QuickAction
+            icon={<Plus size={16} />}
+            label="Create Issue"
+            description="Add a new task"
+            onClick={() => {
+              if (activeProjects[0]) {
+                dispatch({ type: 'SET_PROJECT', id: activeProjects[0].id });
+                dispatch({ type: 'SET_CREATE_ISSUE', show: true });
+              }
+            }}
+          />
+          <QuickAction
+            icon={<Layout size={16} />}
+            label="Open Board"
+            description="Kanban view"
+            onClick={() => {
+              if (activeProjects[0]) selectProject(activeProjects[0].id);
+            }}
+          />
+          <QuickAction
+            icon={<ListChecks size={16} />}
+            label="Backlog"
+            description="Plan sprints"
+            onClick={() => {
+              if (activeProjects[0]) {
+                dispatch({ type: 'SET_PROJECT', id: activeProjects[0].id });
+                navigate(`/project/${activeProjects[0].id}/backlog`);
+              }
+            }}
+          />
+          <QuickAction
+            icon={<Keyboard size={16} />}
+            label="Shortcuts"
+            description="Press ? for all"
+            onClick={() => dispatch({ type: 'SET_SHORTCUTS_MODAL', show: true })}
+          />
+        </div>
+      )}
 
       {/* Projects */}
       <div className="mb-8">
@@ -99,7 +152,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-children">
-            {activeProjects.map(project => (
+            {activeProjects.slice(0, 9).map(project => (
               <button
                 key={project.id}
                 onClick={() => selectProject(project.id)}
@@ -110,7 +163,7 @@ export default function Dashboard() {
                     className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold text-white shrink-0"
                     style={{ backgroundColor: project.color || '#52796F' }}
                   >
-                    {project.key?.slice(0,2)}
+                    {project.icon || project.key?.slice(0,2)}
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="font-display font-semibold truncate">{project.name}</div>
@@ -130,6 +183,33 @@ export default function Dashboard() {
             ))}
           </div>
         )}
+
+        {activeProjects.length > 9 && (
+          <div className="text-center mt-4">
+            <span className="text-sm text-text-tertiary">
+              Showing 9 of {activeProjects.length} projects
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Tips section */}
+      <div className="bg-card-bg rounded-lg border border-border p-5">
+        <h3 className="font-display text-sm font-semibold mb-3 text-text-tertiary">Quick Tips</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-text-secondary">
+          <div className="flex items-start gap-2">
+            <kbd className="px-1.5 py-0.5 font-mono bg-page-bg border border-border rounded text-[10px] shrink-0">⌘K</kbd>
+            <span>Search issues and projects globally</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <kbd className="px-1.5 py-0.5 font-mono bg-page-bg border border-border rounded text-[10px] shrink-0">C</kbd>
+            <span>Create a new issue from anywhere</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <kbd className="px-1.5 py-0.5 font-mono bg-page-bg border border-border rounded text-[10px] shrink-0">?</kbd>
+            <span>View all keyboard shortcuts</span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -146,5 +226,24 @@ function StatCard({ label, value, color }: { label: string; value: string; color
         <div className="text-xs text-text-tertiary">{label}</div>
       </div>
     </div>
+  );
+}
+
+function QuickAction({ icon, label, description, onClick }: {
+  icon: React.ReactNode; label: string; description: string; onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="bg-card-bg rounded-lg border border-border p-3 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group"
+    >
+      <div className="flex items-center gap-2 mb-1">
+        <div className="w-7 h-7 rounded-md bg-amber-500/10 text-amber-600 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
+          {icon}
+        </div>
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+      <p className="text-[11px] text-text-tertiary pl-9">{description}</p>
+    </button>
   );
 }
