@@ -774,6 +774,77 @@ export default function IssueDetailPanel() {
                   )}
                 </div>
 
+                {/* Due Date */}
+                <div>
+                  <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider block mb-1.5">Due Date</span>
+                  <div className="relative">
+                    <input
+                      type="date"
+                      value={issue.dueDate ? new Date(issue.dueDate).toISOString().slice(0, 10) : ''}
+                      onChange={async (e) => {
+                        try {
+                          const dueDate = e.target.value ? new Date(e.target.value).toISOString() : undefined;
+                          await updateIssue.mutateAsync({ id: issue.id, data: { dueDate } });
+                          toast.success('Due date updated');
+                        } catch (err: any) { toast.error(err.message); }
+                      }}
+                      className={`w-full h-8 px-2 text-sm border rounded-md bg-card-bg focus:border-border-focus focus:outline-none ${
+                        issue.dueDate && new Date(issue.dueDate) < new Date() && issue.status !== 'done'
+                          ? 'border-error text-error'
+                          : 'border-border'
+                      }`}
+                    />
+                    {issue.dueDate && new Date(issue.dueDate) < new Date() && issue.status !== 'done' && (
+                      <span className="text-[9px] text-error mt-0.5 block">Overdue</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Time Tracking */}
+                <div>
+                  <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider block mb-1.5">Time Tracking</span>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-text-tertiary w-16">Estimate</span>
+                      <input
+                        type="text"
+                        defaultValue={issue.timeEstimate ? `${Math.floor(issue.timeEstimate / 60)}h ${issue.timeEstimate % 60}m` : ''}
+                        placeholder="e.g. 2h 30m"
+                        onBlur={async (e) => {
+                          const val = e.target.value.trim();
+                          if (!val) return;
+                          const hours = (val.match(/(\d+)h/) || [])[1] || '0';
+                          const mins = (val.match(/(\d+)m/) || [])[1] || '0';
+                          const totalMins = parseInt(hours) * 60 + parseInt(mins);
+                          if (totalMins > 0) {
+                            try {
+                              await updateIssue.mutateAsync({ id: issue.id, data: { timeEstimate: totalMins } });
+                              toast.success('Time estimate updated');
+                            } catch (err: any) { toast.error(err.message); }
+                          }
+                        }}
+                        className="flex-1 h-7 px-2 text-xs border border-border rounded-md bg-card-bg focus:border-border-focus focus:outline-none font-mono"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-text-tertiary w-16">Logged</span>
+                      <span className="text-xs font-mono text-text-secondary">
+                        {issue.timeSpent ? `${Math.floor(issue.timeSpent / 60)}h ${issue.timeSpent % 60}m` : '0h'}
+                      </span>
+                    </div>
+                    {issue.timeEstimate && issue.timeEstimate > 0 && (
+                      <div className="h-1.5 bg-page-bg rounded-full overflow-hidden mt-1">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ${
+                            (issue.timeSpent || 0) > issue.timeEstimate ? 'bg-error' : 'bg-info'
+                          }`}
+                          style={{ width: `${Math.min(((issue.timeSpent || 0) / issue.timeEstimate) * 100, 100)}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Timestamps */}
                 <div className="pt-3 border-t border-border space-y-2">
                   <div className="flex justify-between text-[10px]">
