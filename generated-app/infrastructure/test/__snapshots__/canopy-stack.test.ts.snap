@@ -91,7 +91,7 @@ exports[`CanopyStack matches snapshot 1`] = `
             },
           },
         },
-        "FunctionName": "canopy-api-handler",
+        "FunctionName": "canopy-api-handler-v2",
         "Handler": "index.handler",
         "MemorySize": 512,
         "Role": {
@@ -285,7 +285,7 @@ exports[`CanopyStack matches snapshot 1`] = `
             },
           ],
         },
-        "BucketName": "canopy-frontend-123456789012-us-east-1",
+        "BucketName": "canopy-frontend-v2-123456789012-us-east-1",
         "PublicAccessBlockConfiguration": {
           "BlockPublicAcls": true,
           "BlockPublicPolicy": true,

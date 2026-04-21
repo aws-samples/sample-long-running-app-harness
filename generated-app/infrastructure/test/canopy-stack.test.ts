@@ -71,7 +71,7 @@ describe('CanopyStack', () => {
   describe('Lambda', () => {
     test('creates a Lambda function with Node.js 20 runtime', () => {
       template.hasResourceProperties('AWS::Lambda::Function', {
-        FunctionName: 'canopy-api-handler',
+        FunctionName: 'canopy-api-handler-v2',
         Runtime: 'nodejs20.x',
         MemorySize: 512,
         Timeout: 30,

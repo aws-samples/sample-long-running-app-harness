@@ -54,7 +54,7 @@ export class CanopyStack extends cdk.Stack {
     // Lambda Function - API Handler
     // ============================================================
     const apiHandler = new NodejsFunction(this, 'CanopyApiHandler', {
-      functionName: 'canopy-api-handler',
+      functionName: 'canopy-api-handler-v2',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'handler',
       entry: path.join(__dirname, '../../backend/src/index.ts'),
@@ -112,7 +112,7 @@ export class CanopyStack extends cdk.Stack {
     // S3 Bucket for Frontend
     // ============================================================
     const frontendBucket = new s3.Bucket(this, 'CanopyFrontendBucket', {
-      bucketName: `canopy-frontend-${this.account}-${this.region}`,
+      bucketName: `canopy-frontend-v2-${this.account}-${this.region}`,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
