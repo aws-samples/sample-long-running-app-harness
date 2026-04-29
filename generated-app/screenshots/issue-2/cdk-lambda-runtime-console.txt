@@ -1,0 +1,10 @@
+      ○ skipped exports FrontendBucketName
+      ○ skipped exports DistributionId
+      ○ skipped exports DistributionDomain
+      ○ skipped exports AttachmentsBucketName
+
+Test Suites: 1 passed, 1 total
+Tests:       19 skipped, 1 passed, 20 total
+Snapshots:   0 total
+Time:        13.392 s, estimated 14 s
+Ran all test suites with tests matching "Node.js 20".

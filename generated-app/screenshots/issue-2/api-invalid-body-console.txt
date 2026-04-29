@@ -1,0 +1,2 @@
+{"error":{"code":"VALIDATION_ERROR","message":"Invalid request body","details":[{"code":"invalid_type","expected":"string","received":"undefined","path":["name"],"message":"Required"},{"code":"invalid_type","expected":"string","received":"undefined","path":["key"],"message":"Required"}]}}
+HTTP_STATUS:400

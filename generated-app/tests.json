@@ -92,10 +92,10 @@
   },
   {
     "category": "infrastructure",
-    "description": "CDK tests pass - All 16 tests green",
+    "description": "CDK tests pass - All 20 tests green",
     "steps": [
       "Run cd infrastructure && npm test",
-      "Verify 16 tests passed"
+      "Verify 20 tests passed"
     ],
     "passes": true
   },

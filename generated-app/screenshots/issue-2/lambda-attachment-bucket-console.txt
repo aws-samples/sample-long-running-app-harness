@@ -1,11 +1,11 @@
 
 > @canopy/infrastructure@1.0.0 test
-> jest --testNamePattern=S3.*attachments
+> jest --testNamePattern=ATTACHMENT_BUCKET_NAME
 
 Bundling asset TestStack/CanopyApiHandler/Code/Stage...
 
-  ...889ed64ee1d4f05bda56620dd6e395138609796ad8b706-building/index.js   75.8kb
-  ...d64ee1d4f05bda56620dd6e395138609796ad8b706-building/index.js.map  293.3kb
+  ...8b1dcafdcbed94c2a9aa549a3adb7d3304444c126241d4-building/index.js   75.8kb
+  ...cafdcbed94c2a9aa549a3adb7d3304444c126241d4-building/index.js.map  293.3kb
 
 ⚡ Done in 26ms
   console.warn
@@ -47,7 +47,7 @@ Bundling asset TestStack/CanopyApiHandler/Code/Stage...
       at new CanopyStack (lib/canopy-stack.ts:151:26)
       at Object.<anonymous> (test/canopy-stack.test.ts:10:19)
 
-PASS test/canopy-stack.test.ts (13.149 s)
+PASS test/canopy-stack.test.ts (13.026 s)
   CanopyStack
     ○ skipped matches snapshot
     DynamoDB
@@ -55,21 +55,21 @@ PASS test/canopy-stack.test.ts (13.149 s)
       ○ skipped DynamoDB table has three GSIs
       ○ skipped DynamoDB table has point-in-time recovery enabled
     Lambda
+      ✓ Lambda has ATTACHMENT_BUCKET_NAME environment variable (8 ms)
       ○ skipped creates a Lambda function with Node.js 20 runtime
       ○ skipped Lambda has TABLE_NAME environment variable
-      ○ skipped Lambda has ATTACHMENT_BUCKET_NAME environment variable
     API Gateway
       ○ skipped creates an HTTP API
       ○ skipped API Gateway has CORS configured
     S3 and CloudFront
-      ✓ creates an S3 bucket for attachments (8 ms)
       ○ skipped creates an S3 bucket for frontend
+      ○ skipped creates an S3 bucket for attachments
       ○ skipped creates a CloudFront distribution
       ○ skipped CloudFront has SPA routing error responses
     IAM
       ○ skipped Lambda has DynamoDB read/write policy
     S3 Attachments IAM
-      ✓ Lambda has S3 read/write policy for attachments (3 ms)
+      ○ skipped Lambda has S3 read/write policy for attachments
     Stack Outputs
       ○ skipped exports ApiUrl
       ○ skipped exports FrontendBucketName
@@ -78,7 +78,7 @@ PASS test/canopy-stack.test.ts (13.149 s)
       ○ skipped exports AttachmentsBucketName
 
 Test Suites: 1 passed, 1 total
-Tests:       18 skipped, 2 passed, 20 total
+Tests:       19 skipped, 1 passed, 20 total
 Snapshots:   0 total
-Time:        13.474 s, estimated 14 s
-Ran all test suites with tests matching "S3.*attachments".
+Time:        13.348 s, estimated 14 s
+Ran all test suites with tests matching "ATTACHMENT_BUCKET_NAME".
