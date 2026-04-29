@@ -54,7 +54,7 @@ export class CanopyStack extends cdk.Stack {
     // S3 Bucket for Attachments
     // ============================================================
     const attachmentsBucket = new s3.Bucket(this, 'CanopyAttachmentsBucket', {
-      bucketName: `canopy-attachments-${this.account}-${this.region}`,
+      bucketName: `canopy-attachments-v2-${this.account}-${this.region}`,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,

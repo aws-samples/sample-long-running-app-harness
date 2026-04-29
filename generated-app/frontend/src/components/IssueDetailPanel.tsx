@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
-import { X, Bookmark, Bug, CheckSquare, Zap, ListTodo, Copy, Trash2, User, Calendar, Tag, Clock, Hash, ChevronDown } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { X, Bookmark, Bug, CheckSquare, Zap, ListTodo, Copy, Trash2, User, Calendar, Tag, Clock, Hash, ChevronDown, Paperclip, Upload, FileText, Image, File, Download, XCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { useIssue, useUpdateIssue, useDeleteIssue, useComments, useAddComment, useSprints, useIssues } from '../hooks/useApi';
+import { useIssue, useUpdateIssue, useDeleteIssue, useComments, useAddComment, useSprints, useIssues, useAttachments, useCreateAttachment, useDeleteAttachment, useDownloadUrl } from '../hooks/useApi';
 import { ISSUE_TYPE_COLORS, PRIORITY_COLORS, PRIORITY_ICONS, formatRelativeDate, formatDate } from '../lib/utils';
 import { MOCK_USERS, MOCK_USERS_MAP, CURRENT_USER } from '../lib/users';
 import { toast } from 'sonner';
-import type { Priority, IssueType } from '@canopy/shared';
+import type { Priority, IssueType, Attachment } from '@canopy/shared';
 
 const TYPE_ICONS: Record<string, React.ReactNode> = {
   Epic: <Zap size={16} />,
@@ -52,6 +52,10 @@ export default function IssueDetailPanel() {
   const addComment = useAddComment();
   const { data: sprints } = useSprints(issue?.projectId);
   const { data: allIssues } = useIssues(issue?.projectId);
+  const { data: attachments, isLoading: attachmentsLoading } = useAttachments(state.selectedIssueId || undefined);
+  const createAttachment = useCreateAttachment();
+  const deleteAttachment = useDeleteAttachment();
+  const downloadUrl = useDownloadUrl();
 
   const [commentText, setCommentText] = useState('');
   const [editingSummary, setEditingSummary] = useState(false);
@@ -67,6 +71,9 @@ export default function IssueDetailPanel() {
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [activeTab, setActiveTab] = useState<'comments' | 'history'>('comments');
+  const [uploadingFiles, setUploadingFiles] = useState<Map<string, number>>(new Map());
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   const close = () => dispatch({ type: 'SELECT_ISSUE', id: null });
@@ -261,6 +268,120 @@ export default function IssueDetailPanel() {
     }
   }
 
+  async function handleFileUpload(files: FileList | null) {
+    if (!files || !issue) return;
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
+    for (const file of Array.from(files)) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error(`${file.name} is too large (max 50MB)`);
+        continue;
+      }
+
+      const tempId = `upload-${Date.now()}-${file.name}`;
+      setUploadingFiles(prev => new Map(prev).set(tempId, 0));
+
+      try {
+        // Step 1: Get pre-signed upload URL from API
+        const result = await createAttachment.mutateAsync({
+          issueId: issue.id,
+          data: {
+            filename: file.name,
+            contentType: file.type || 'application/octet-stream',
+            fileSize: file.size,
+          },
+        });
+
+        setUploadingFiles(prev => new Map(prev).set(tempId, 30));
+
+        // Step 2: Upload the file directly to S3 using pre-signed URL
+        const uploadResponse = await fetch(result.uploadUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': file.type || 'application/octet-stream',
+          },
+          body: file,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error(`Upload failed: ${uploadResponse.statusText}`);
+        }
+
+        setUploadingFiles(prev => {
+          const next = new Map(prev);
+          next.delete(tempId);
+          return next;
+        });
+
+        toast.success(`${file.name} uploaded successfully`);
+      } catch (err: any) {
+        setUploadingFiles(prev => {
+          const next = new Map(prev);
+          next.delete(tempId);
+          return next;
+        });
+        toast.error(`Failed to upload ${file.name}: ${err.message}`);
+      }
+    }
+  }
+
+  async function handleDeleteAttachment(attachmentId: string, filename: string) {
+    if (!issue) return;
+    try {
+      await deleteAttachment.mutateAsync({ id: attachmentId, issueId: issue.id });
+      toast.success(`${filename} deleted`);
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  }
+
+  async function handleDownloadAttachment(attachmentId: string, filename: string) {
+    try {
+      const result = await downloadUrl.mutateAsync(attachmentId);
+      // Open in a new tab or download
+      const link = document.createElement('a');
+      link.href = result.downloadUrl;
+      link.download = filename;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err: any) {
+      toast.error(`Failed to download: ${err.message}`);
+    }
+  }
+
+  function getFileIcon(contentType: string) {
+    if (contentType.startsWith('image/')) return <Image size={16} className="text-emerald-500" />;
+    if (contentType.includes('pdf')) return <FileText size={16} className="text-red-500" />;
+    return <File size={16} className="text-text-tertiary" />;
+  }
+
+  function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    handleFileUpload(e.dataTransfer.files);
+  }, [issue]);
+
   return (
     <div ref={panelRef} className="w-[680px] bg-card-bg border-l border-border shadow-xl animate-slide-in-right flex flex-col shrink-0 overflow-hidden relative">
       {isLoading ? (
@@ -388,6 +509,114 @@ export default function IssueDetailPanel() {
                       {issue.description || <span className="text-text-tertiary italic">Click to add description...</span>}
                     </div>
                   )}
+                </div>
+
+                {/* Attachments Section */}
+                <div className="mb-6" data-testid="attachments-section">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Paperclip size={13} className="text-text-tertiary" />
+                      <h3 className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">
+                        Attachments {attachments && attachments.length > 0 ? `(${attachments.length})` : ''}
+                      </h3>
+                    </div>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-amber-600 hover:text-amber-700 hover:bg-amber-500/10 rounded transition-colors"
+                      data-testid="upload-button"
+                    >
+                      <Upload size={12} />
+                      Upload
+                    </button>
+                  </div>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={e => handleFileUpload(e.target.files)}
+                    data-testid="file-input"
+                  />
+
+                  {/* Drop zone */}
+                  <div
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`border-2 border-dashed rounded-lg p-3 transition-all ${
+                      isDragOver
+                        ? 'border-amber-500 bg-amber-500/5'
+                        : 'border-border hover:border-text-tertiary'
+                    } ${!attachments?.length && !uploadingFiles.size ? 'py-6' : ''}`}
+                    data-testid="drop-zone"
+                  >
+                    {/* Upload in progress */}
+                    {Array.from(uploadingFiles.entries()).map(([id, progress]) => (
+                      <div key={id} className="flex items-center gap-2 py-1.5 animate-fade-in">
+                        <div className="w-8 h-8 rounded-md bg-amber-500/10 flex items-center justify-center shrink-0">
+                          <Upload size={14} className="text-amber-500 animate-pulse" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-text-secondary truncate">{id.replace(/^upload-\d+-/, '')}</p>
+                          <div className="h-1.5 bg-page-bg rounded-full overflow-hidden mt-1">
+                            <div
+                              className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Existing attachments */}
+                    {attachments && attachments.length > 0 && (
+                      <div className="space-y-1">
+                        {attachments.map((att: Attachment) => (
+                          <div
+                            key={att.id}
+                            className="flex items-center gap-2 group py-1.5 px-2 -mx-2 rounded-md hover:bg-hover-bg transition-colors"
+                            data-testid="attachment-item"
+                          >
+                            <div className="w-8 h-8 rounded-md bg-page-bg flex items-center justify-center shrink-0">
+                              {getFileIcon(att.contentType)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-text-primary truncate">{att.filename}</p>
+                              <p className="text-[10px] text-text-tertiary">{formatFileSize(att.fileSize)}</p>
+                            </div>
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                              <button
+                                onClick={() => handleDownloadAttachment(att.id, att.filename)}
+                                className="p-1 rounded hover:bg-page-bg transition-colors"
+                                title="Download"
+                              >
+                                <Download size={13} className="text-text-tertiary hover:text-text-primary" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteAttachment(att.id, att.filename)}
+                                className="p-1 rounded hover:bg-page-bg transition-colors"
+                                title="Delete"
+                              >
+                                <XCircle size={13} className="text-text-tertiary hover:text-error" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Empty state */}
+                    {(!attachments || attachments.length === 0) && uploadingFiles.size === 0 && (
+                      <div className="text-center">
+                        <Paperclip size={20} className="mx-auto mb-1.5 text-text-tertiary/50" />
+                        <p className="text-xs text-text-tertiary">
+                          Drop files here or <button onClick={() => fileInputRef.current?.click()} className="text-amber-600 hover:text-amber-700 underline">browse</button>
+                        </p>
+                        <p className="text-[10px] text-text-tertiary/60 mt-0.5">Max 50MB per file</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Child issues section (for Epics) */}

@@ -4,6 +4,7 @@ import type {
   Sprint, CreateSprint, UpdateSprint,
   Board, UpdateBoard,
   SearchResult,
+  Attachment, AttachmentUploadResponse,
 } from '@canopy/shared';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -103,6 +104,18 @@ export const api = {
     method: 'PUT',
     body: JSON.stringify(data),
   }),
+
+  // Attachments
+  listAttachments: (issueId: string) => request<Attachment[]>(`/issues/${issueId}/attachments`),
+  createAttachment: (issueId: string, data: { filename: string; contentType: string; fileSize: number }) =>
+    request<AttachmentUploadResponse>(`/issues/${issueId}/attachments`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  deleteAttachment: (id: string) => request<{ success: boolean }>(`/attachments/${id}`, {
+    method: 'DELETE',
+  }),
+  getDownloadUrl: (id: string) => request<{ downloadUrl: string }>(`/attachments/${id}/download`),
 
   // Search
   search: (q: string, projectId?: string) => {

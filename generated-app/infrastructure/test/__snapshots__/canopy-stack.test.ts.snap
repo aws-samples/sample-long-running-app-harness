@@ -279,7 +279,7 @@ exports[`CanopyStack matches snapshot 1`] = `
             },
           ],
         },
-        "BucketName": "canopy-attachments-123456789012-us-east-1",
+        "BucketName": "canopy-attachments-v2-123456789012-us-east-1",
         "CorsConfiguration": {
           "CorsRules": [
             {

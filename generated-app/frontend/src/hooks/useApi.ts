@@ -158,6 +158,42 @@ export function useAddComment() {
   });
 }
 
+// ==================== Attachments ====================
+export function useAttachments(issueId: string | undefined) {
+  return useQuery({
+    queryKey: ['attachments', issueId],
+    queryFn: () => api.listAttachments(issueId!),
+    enabled: !!issueId,
+  });
+}
+
+export function useCreateAttachment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ issueId, data }: { issueId: string; data: { filename: string; contentType: string; fileSize: number } }) =>
+      api.createAttachment(issueId, data),
+    onSuccess: (_, { issueId }) => {
+      qc.invalidateQueries({ queryKey: ['attachments', issueId] });
+    },
+  });
+}
+
+export function useDeleteAttachment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, issueId }: { id: string; issueId: string }) => api.deleteAttachment(id),
+    onSuccess: (_, { issueId }) => {
+      qc.invalidateQueries({ queryKey: ['attachments', issueId] });
+    },
+  });
+}
+
+export function useDownloadUrl() {
+  return useMutation({
+    mutationFn: (id: string) => api.getDownloadUrl(id),
+  });
+}
+
 // ==================== Search ====================
 export function useSearch(q: string, projectId?: string) {
   return useQuery({
