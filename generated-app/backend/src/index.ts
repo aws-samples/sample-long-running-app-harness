@@ -3,6 +3,7 @@ import { createIssue, listIssues, getIssue, updateIssue, deleteIssue, bulkUpdate
 import { createSprint, listSprints, updateSprint } from './handlers/sprints';
 import { getBoard, updateBoard } from './handlers/boards';
 import { addComment, listComments } from './handlers/comments';
+import { createAttachment, listAttachments, deleteAttachment, getDownloadUrl } from './handlers/attachments';
 import { search } from './handlers/search';
 
 interface APIGatewayEvent {
@@ -104,6 +105,17 @@ export async function handler(event: APIGatewayEvent) {
       result = await deleteIssue(match.params.id);
     } else if (method === 'PUT' && (match = matchRoute('/issues/bulk', path))) {
       result = await bulkUpdateIssues(body);
+    }
+
+    // Attachments (must come before comments to match /attachments/:id/download first)
+    else if (method === 'GET' && (match = matchRoute('/attachments/:id/download', path))) {
+      result = await getDownloadUrl(match.params.id);
+    } else if (method === 'DELETE' && (match = matchRoute('/attachments/:id', path))) {
+      result = await deleteAttachment(match.params.id);
+    } else if (method === 'POST' && (match = matchRoute('/issues/:id/attachments', path))) {
+      result = await createAttachment(match.params.id, body);
+    } else if (method === 'GET' && (match = matchRoute('/issues/:id/attachments', path))) {
+      result = await listAttachments(match.params.id);
     }
 
     // Comments

@@ -21,6 +21,9 @@ export type {
   UpdateBoard,
   CreateComment,
   Comment,
+  CreateAttachment,
+  Attachment,
+  AttachmentUploadResponse,
   SearchQuery,
   SearchResult,
 } from './types';

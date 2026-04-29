@@ -51,6 +51,25 @@ export class CanopyStack extends cdk.Stack {
     });
 
     // ============================================================
+    // S3 Bucket for Attachments
+    // ============================================================
+    const attachmentsBucket = new s3.Bucket(this, 'CanopyAttachmentsBucket', {
+      bucketName: `canopy-attachments-${this.account}-${this.region}`,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      cors: [
+        {
+          allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.PUT],
+          allowedOrigins: ['*'],
+          allowedHeaders: ['*'],
+          maxAge: 3600,
+        },
+      ],
+    });
+
+    // ============================================================
     // Lambda Function - API Handler
     // ============================================================
     const apiHandler = new NodejsFunction(this, 'CanopyApiHandler', {
@@ -62,6 +81,7 @@ export class CanopyStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(30),
       environment: {
         TABLE_NAME: table.tableName,
+        ATTACHMENT_BUCKET_NAME: attachmentsBucket.bucketName,
         NODE_OPTIONS: '--enable-source-maps',
       },
       depsLockFilePath: path.join(__dirname, '../../package-lock.json'),
@@ -74,6 +94,9 @@ export class CanopyStack extends cdk.Stack {
 
     // Grant DynamoDB access to Lambda
     table.grantReadWriteData(apiHandler);
+
+    // Grant S3 access to Lambda for attachments
+    attachmentsBucket.grantReadWrite(apiHandler);
 
     // ============================================================
     // API Gateway - HTTP API
@@ -181,6 +204,12 @@ export class CanopyStack extends cdk.Stack {
       value: table.tableName,
       description: 'DynamoDB table name',
       exportName: 'CanopyTableName',
+    });
+
+    new cdk.CfnOutput(this, 'AttachmentsBucketName', {
+      value: attachmentsBucket.bucketName,
+      description: 'S3 bucket for file attachments',
+      exportName: 'CanopyAttachmentsBucketName',
     });
   }
 }

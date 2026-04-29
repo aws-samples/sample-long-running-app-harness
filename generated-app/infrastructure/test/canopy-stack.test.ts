@@ -87,6 +87,16 @@ describe('CanopyStack', () => {
         },
       });
     });
+
+    test('Lambda has ATTACHMENT_BUCKET_NAME environment variable', () => {
+      template.hasResourceProperties('AWS::Lambda::Function', {
+        Environment: {
+          Variables: Match.objectLike({
+            ATTACHMENT_BUCKET_NAME: Match.anyValue(),
+          }),
+        },
+      });
+    });
   });
 
   // ============================================================
@@ -122,6 +132,12 @@ describe('CanopyStack', () => {
           IgnorePublicAcls: true,
           RestrictPublicBuckets: true,
         },
+      });
+    });
+
+    test('creates an S3 bucket for attachments', () => {
+      template.hasResourceProperties('AWS::S3::Bucket', {
+        BucketName: Match.stringLikeRegexp('canopy-attachments-'),
       });
     });
 
@@ -176,6 +192,27 @@ describe('CanopyStack', () => {
   });
 
   // ============================================================
+  // S3 Attachments IAM Tests
+  // ============================================================
+  describe('S3 Attachments IAM', () => {
+    test('Lambda has S3 read/write policy for attachments', () => {
+      template.hasResourceProperties('AWS::IAM::Policy', {
+        PolicyDocument: {
+          Statement: Match.arrayWith([
+            Match.objectLike({
+              Action: Match.arrayWith([
+                's3:GetObject*',
+                's3:GetBucket*',
+              ]),
+              Effect: 'Allow',
+            }),
+          ]),
+        },
+      });
+    });
+  });
+
+  // ============================================================
   // Stack Outputs Tests
   // ============================================================
   describe('Stack Outputs', () => {
@@ -200,6 +237,12 @@ describe('CanopyStack', () => {
     test('exports DistributionDomain', () => {
       template.hasOutput('DistributionDomain', {
         Export: { Name: 'CanopyDistributionDomain' },
+      });
+    });
+
+    test('exports AttachmentsBucketName', () => {
+      template.hasOutput('AttachmentsBucketName', {
+        Export: { Name: 'CanopyAttachmentsBucketName' },
       });
     });
   });

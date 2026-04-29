@@ -44,3 +44,9 @@ export {
   SearchQuerySchema,
   SearchResultSchema,
 } from './search';
+
+export {
+  CreateAttachmentSchema,
+  AttachmentSchema,
+  AttachmentUploadResponseSchema,
+} from './attachment';

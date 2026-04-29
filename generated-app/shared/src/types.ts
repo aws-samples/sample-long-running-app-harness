@@ -34,6 +34,11 @@ export type UpdateBoard = z.infer<typeof schemas.UpdateBoardSchema>;
 export type CreateComment = z.infer<typeof schemas.CreateCommentSchema>;
 export type Comment = z.infer<typeof schemas.CommentSchema>;
 
+// Attachment
+export type CreateAttachment = z.infer<typeof schemas.CreateAttachmentSchema>;
+export type Attachment = z.infer<typeof schemas.AttachmentSchema>;
+export type AttachmentUploadResponse = z.infer<typeof schemas.AttachmentUploadResponseSchema>;
+
 // Search
 export type SearchQuery = z.infer<typeof schemas.SearchQuerySchema>;
 export type SearchResult = z.infer<typeof schemas.SearchResultSchema>;
