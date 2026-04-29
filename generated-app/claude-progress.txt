@@ -1,23 +1,73 @@
 CANOPY PROJECT MANAGEMENT APP - PROGRESS UPDATE
 =================================================
-Last Updated: 2026-04-20 (Session 5 - UI Polish & Dark Mode - FINAL)
+Last Updated: 2026-04-29 (Session 6 - File Upload Feature - Issue #2)
 
-## STATUS: ALL PHASES COMPLETE + ALL POLISH COMPLETE
-All 4 phases are complete. All phase gates pass. 51 e2e tests pass. 16 CDK tests pass.
+## STATUS: ALL PHASES COMPLETE + FILE UPLOAD FEATURE ADDED
+All 4 phases are complete. All phase gates pass. 59 tests total (50 existing + 9 new). 20 CDK tests pass.
+File upload feature fully implemented: shared schemas, CDK infra (S3 bucket), backend handlers, frontend UI.
 
-## API URL
-https://q4rf5i4bal.execute-api.us-east-1.amazonaws.com
+## API URL (UPDATED after deployment)
+https://cqrtckvcg4.execute-api.us-east-1.amazonaws.com
 
 ## FRONTEND ENV
-VITE_API_URL=https://q4rf5i4bal.execute-api.us-east-1.amazonaws.com (set in frontend/.env)
+VITE_API_URL=https://cqrtckvcg4.execute-api.us-east-1.amazonaws.com (set in frontend/.env)
 
 ## PHASE GATES (ALL PASSING)
 1. shared/ compiles: `cd shared && npx tsc --noEmit` ✅
 2. infrastructure/ synths: `cd infrastructure && npx cdk synth` ✅
-3. infrastructure/ tests: 16/16 pass (`cd infrastructure && npm test`) ✅
+3. infrastructure/ tests: 20/20 pass (`cd infrastructure && npm test`) ✅
 4. frontend/ builds: `cd frontend && npm run build` ✅ (~274KB gzipped)
 5. API endpoints respond: `curl -s $API_URL/projects` returns JSON ✅
-6. 51/51 e2e tests pass: `npx playwright test e2e-tests/` ✅
+6. Attachment endpoints work: POST/GET/DELETE /issues/:id/attachments ✅
+
+## SESSION 6 - FILE UPLOAD FEATURE (Issue #2)
+
+### Changes Made
+1. **Shared schemas** (`shared/src/schemas/attachment.ts`):
+   - CreateAttachmentSchema: issueId, filename, contentType, fileSize (max 50MB)
+   - AttachmentSchema: extends with id, s3Key, uploaderId, timestamps
+   - AttachmentUploadResponseSchema: attachment + uploadUrl
+
+2. **CDK Infrastructure** (`infrastructure/lib/canopy-stack.ts`):
+   - Added S3 bucket `canopy-attachments-v2-{account}-{region}` for file storage
+   - Enabled CORS on bucket for browser uploads
+   - Granted Lambda S3 read/write permissions
+   - Added ATTACHMENT_BUCKET_NAME environment variable to Lambda
+   - Added AttachmentsBucketName stack output
+   - CDK tests updated: 20 tests passing (was 16)
+
+3. **Backend handlers** (`backend/src/handlers/attachments.ts`):
+   - POST /issues/:id/attachments - creates attachment metadata + returns pre-signed S3 upload URL
+   - GET /issues/:id/attachments - lists all attachments for an issue
+   - GET /attachments/:id/download - returns pre-signed S3 download URL
+   - DELETE /attachments/:id - deletes from S3 and DynamoDB
+   - DynamoDB keys: PK=ATTACHMENT#{id}, SK=METADATA, GSI1PK=ISSUE#{issueId}
+
+4. **Frontend UI** (`frontend/src/components/IssueDetailPanel.tsx`):
+   - Attachments section between Description and Child Issues
+   - Drag-and-drop file upload zone
+   - Upload button triggers hidden file input
+   - File list with filename, size, file type icons
+   - Download and delete buttons on hover
+   - Upload progress indicator
+   - Pre-signed URL upload directly to S3
+
+5. **API client** (`frontend/src/api/client.ts`):
+   - listAttachments, createAttachment, deleteAttachment, getDownloadUrl
+
+6. **React Query hooks** (`frontend/src/hooks/useApi.ts`):
+   - useAttachments, useCreateAttachment, useDeleteAttachment, useDownloadUrl
+
+### New Tests Added (9)
+- CDK stack includes S3 attachments bucket
+- Lambda has ATTACHMENT_BUCKET_NAME environment variable
+- API endpoint POST /issues/:id/attachments creates attachment with upload URL
+- API endpoint GET /issues/:id/attachments returns attachment list
+- API endpoint GET /attachments/:id/download returns download URL
+- API endpoint DELETE /attachments/:id deletes attachment
+- Issue detail panel shows attachments section
+- File upload button and drop zone are present
+- Uploaded attachments appear in the attachment list
 
 ## SESSION 5 COMMITS
 1. fab81a6 - feat: add delete confirmation dialog and dark mode page tests

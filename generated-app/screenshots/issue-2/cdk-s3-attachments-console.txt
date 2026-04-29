@@ -1,0 +1,5 @@
+Test Suites: 1 passed, 1 total
+Tests:       19 skipped, 1 passed, 20 total
+Snapshots:   0 total
+Time:        13.667 s, estimated 24 s
+Ran all test suites with tests matching "creates an S3 bucket for attachments".
