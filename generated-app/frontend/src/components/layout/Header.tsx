@@ -1,13 +1,16 @@
 import { Search, Plus, TreePine, ChevronDown, Menu, Moon, Sun } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useProjects } from '../../hooks/useApi';
+import { useTranslation } from '../../i18n';
 import { useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { getProjectIconComponent } from '../../pages/CreateProject';
+import LanguageSwitcher from '../LanguageSwitcher';
 
 export default function Header() {
   const { state, dispatch } = useApp();
   const { data: projects } = useProjects();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [projectSearch, setProjectSearch] = useState('');
@@ -51,7 +54,7 @@ export default function Header() {
         className="flex items-center gap-2 bg-white/10 hover:bg-white/15 rounded-md px-3 py-1.5 text-sm text-white/70 flex-1 max-w-md transition-colors"
       >
         <Search size={15} />
-        <span>Search issues...</span>
+        <span>{t('header.search')}</span>
         <kbd className="ml-auto text-[10px] bg-white/10 px-1.5 py-0.5 rounded font-mono">⌘K</kbd>
       </button>
 
@@ -72,7 +75,7 @@ export default function Header() {
               <span className="font-medium hidden md:inline max-w-[180px] truncate">{currentProject.name}</span>
             </>
           ) : (
-            <span className="text-white/70">Select Project</span>
+            <span className="text-white/70">{t('header.selectProject')}</span>
           )}
           <ChevronDown size={14} />
         </button>
@@ -84,7 +87,7 @@ export default function Header() {
                 type="text"
                 value={projectSearch}
                 onChange={e => setProjectSearch(e.target.value)}
-                placeholder="Search projects..."
+                placeholder={t('header.searchProjects')}
                 className="w-full px-3 py-1.5 text-sm text-text-primary bg-page-bg rounded-md border border-border focus:border-border-focus focus:outline-none"
                 autoFocus
               />
@@ -115,7 +118,7 @@ export default function Header() {
                 </button>
               ))}
               {(!projects || projects.length === 0) && (
-                <div className="px-3 py-4 text-sm text-text-tertiary text-center">No projects yet</div>
+                <div className="px-3 py-4 text-sm text-text-tertiary text-center">{t('common.noProjectsYet')}</div>
               )}
             </div>
             <div className="border-t border-border p-1">
@@ -123,18 +126,21 @@ export default function Header() {
                 onClick={() => { setShowProjectDropdown(false); navigate('/projects/new'); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm text-amber-500 hover:bg-hover-bg rounded transition-colors"
               >
-                <Plus size={14} /> Create New Project
+                <Plus size={14} /> {t('header.createNewProject')}
               </button>
             </div>
           </div>
         )}
       </div>
 
+      {/* Language Switcher */}
+      <LanguageSwitcher />
+
       {/* Dark mode toggle */}
       <button
         onClick={() => dispatch({ type: 'SET_THEME', theme: state.theme === 'dark' ? 'light' : 'dark' })}
         className="p-1.5 rounded-md hover:bg-white/10 transition-colors"
-        title={state.theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        title={state.theme === 'dark' ? t('header.lightMode') : t('header.darkMode')}
       >
         {state.theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
       </button>
@@ -145,7 +151,7 @@ export default function Header() {
         className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-md px-3 py-1.5 text-sm font-medium transition-colors active:scale-[0.98]"
       >
         <Plus size={15} />
-        <span className="hidden sm:inline">Create</span>
+        <span className="hidden sm:inline">{t('header.create')}</span>
       </button>
     </header>
   );

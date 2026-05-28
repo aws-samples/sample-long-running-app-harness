@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useProjects } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
+import { useTranslation } from '../i18n';
 import { useNavigate } from 'react-router-dom';
 import { TreePine, Plus, FolderOpen, ArrowRight, AlertTriangle, Keyboard, BarChart3, Layout, ListChecks } from 'lucide-react';
 import { formatRelativeDate } from '../lib/utils';
@@ -10,6 +11,7 @@ import { getProjectIconComponent } from './CreateProject';
 export default function Dashboard() {
   const { data: projects, isLoading, error } = useProjects();
   const { dispatch } = useApp();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const activeProjects = useMemo(() =>
@@ -53,19 +55,19 @@ export default function Dashboard() {
             <TreePine size={22} className="text-forest-300" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold gradient-text">Welcome to Canopy</h1>
-            <p className="text-sm text-text-secondary">Manage your projects with clarity and focus</p>
+            <h1 className="font-display text-2xl font-bold gradient-text">{t('dashboard.welcome')}</h1>
+            <p className="text-sm text-text-secondary">{t('dashboard.subtitle')}</p>
           </div>
         </div>
       </div>
 
       {/* Quick stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 stagger-children">
-        <StatCard label="Active Projects" value={String(activeProjects.length)} color="bg-forest-700" />
-        <StatCard label="Total Issues" value={String(totalIssues)} color="bg-info" />
+        <StatCard label={t('dashboard.activeProjects')} value={String(activeProjects.length)} color="bg-forest-700" />
+        <StatCard label={t('dashboard.totalIssues')} value={String(totalIssues)} color="bg-info" />
         <StatCard
-          label="Last Updated"
-          value={activeProjects.length > 0 ? formatRelativeDate(activeProjects[0].updatedAt) : 'N/A'}
+          label={t('dashboard.lastUpdated')}
+          value={activeProjects.length > 0 ? formatRelativeDate(activeProjects[0].updatedAt) : t('common.na')}
           color="bg-amber-500"
         />
       </div>
@@ -75,8 +77,8 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
           <QuickAction
             icon={<Plus size={16} />}
-            label="Create Issue"
-            description="Add a new task"
+            label={t('dashboard.createIssue')}
+            description={t('dashboard.addNewTask')}
             onClick={() => {
               if (activeProjects[0]) {
                 dispatch({ type: 'SET_PROJECT', id: activeProjects[0].id });
@@ -86,16 +88,16 @@ export default function Dashboard() {
           />
           <QuickAction
             icon={<Layout size={16} />}
-            label="Open Board"
-            description="Kanban view"
+            label={t('dashboard.viewBoard')}
+            description={t('dashboard.kanbanView')}
             onClick={() => {
               if (activeProjects[0]) selectProject(activeProjects[0].id);
             }}
           />
           <QuickAction
             icon={<ListChecks size={16} />}
-            label="Backlog"
-            description="Plan sprints"
+            label={t('sidebar.backlog')}
+            description={t('dashboard.shortcuts')}
             onClick={() => {
               if (activeProjects[0]) {
                 dispatch({ type: 'SET_PROJECT', id: activeProjects[0].id });
@@ -105,8 +107,8 @@ export default function Dashboard() {
           />
           <QuickAction
             icon={<Keyboard size={16} />}
-            label="Shortcuts"
-            description="Press ? for all"
+            label={t('dashboard.shortcuts')}
+            description={t('dashboard.keyboardNav')}
             onClick={() => dispatch({ type: 'SET_SHORTCUTS_MODAL', show: true })}
           />
         </div>
@@ -117,13 +119,13 @@ export default function Dashboard() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-lg font-semibold flex items-center gap-2">
             <FolderOpen size={20} className="text-text-tertiary" />
-            Projects
+            {t('dashboard.yourProjects')}
           </h2>
           <button
             onClick={() => navigate('/projects/new')}
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors font-medium"
           >
-            <Plus size={14} /> New Project
+            <Plus size={14} /> {t('dashboard.newProject')}
           </button>
         </div>
 
@@ -142,13 +144,13 @@ export default function Dashboard() {
             <div className="w-16 h-16 rounded-full bg-forest-100 flex items-center justify-center mx-auto mb-4">
               <TreePine size={28} className="text-forest-600" />
             </div>
-            <h3 className="font-display text-lg font-semibold mb-2">No projects yet</h3>
-            <p className="text-sm text-text-secondary mb-4">Create your first project to get started managing tasks</p>
+            <h3 className="font-display text-lg font-semibold mb-2">{t('dashboard.noProjects')}</h3>
+            <p className="text-sm text-text-secondary mb-4">{t('dashboard.getStarted')}</p>
             <button
               onClick={() => navigate('/projects/new')}
               className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors font-medium text-sm"
             >
-              <Plus size={16} /> Create Your First Project
+              <Plus size={16} /> {t('dashboard.createFirstProject')}
             </button>
           </div>
         ) : (
@@ -176,9 +178,9 @@ export default function Dashboard() {
                   <p className="text-sm text-text-secondary line-clamp-2 mb-3">{project.description}</p>
                 )}
                 <div className="flex items-center gap-3 text-xs text-text-tertiary">
-                  <span>{project.issueCounter || 0} issues</span>
+                  <span>{project.issueCounter || 0} {t('dashboard.issues')}</span>
                   <span>·</span>
-                  <span>Updated {formatRelativeDate(project.updatedAt)}</span>
+                  <span>{t('dashboard.updated')} {formatRelativeDate(project.updatedAt)}</span>
                 </div>
               </button>
             ))}
@@ -196,19 +198,19 @@ export default function Dashboard() {
 
       {/* Tips section */}
       <div className="bg-card-bg rounded-lg border border-border p-5">
-        <h3 className="font-display text-sm font-semibold mb-3 text-text-tertiary">Quick Tips</h3>
+        <h3 className="font-display text-sm font-semibold mb-3 text-text-tertiary">{t('dashboard.tips')}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-text-secondary">
           <div className="flex items-start gap-2">
             <kbd className="px-1.5 py-0.5 font-mono bg-page-bg border border-border rounded text-[10px] shrink-0">⌘K</kbd>
-            <span>Search issues and projects globally</span>
+            <span>{t('dashboard.tip1b')}</span>
           </div>
           <div className="flex items-start gap-2">
             <kbd className="px-1.5 py-0.5 font-mono bg-page-bg border border-border rounded text-[10px] shrink-0">C</kbd>
-            <span>Create a new issue from anywhere</span>
+            <span>{t('dashboard.tip3b')}</span>
           </div>
           <div className="flex items-start gap-2">
             <kbd className="px-1.5 py-0.5 font-mono bg-page-bg border border-border rounded text-[10px] shrink-0">?</kbd>
-            <span>View all keyboard shortcuts</span>
+            <span>{t('dashboard.tip4b')}</span>
           </div>
         </div>
       </div>

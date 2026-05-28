@@ -1,4 +1,5 @@
 import { useApp } from '../../context/AppContext';
+import { useTranslation } from '../../i18n';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, List, Kanban, Map, BarChart3, Timer, Settings,
@@ -13,29 +14,30 @@ interface NavItem {
 
 export default function Sidebar() {
   const { state, dispatch } = useApp();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
 
   const projectId = state.currentProjectId;
 
   const planningItems: NavItem[] = projectId ? [
-    { icon: <Map size={18} />, label: 'Roadmap', path: `/project/${projectId}/roadmap` },
-    { icon: <List size={18} />, label: 'Backlog', path: `/project/${projectId}/backlog` },
-    { icon: <Timer size={18} />, label: 'Active Sprints', path: `/project/${projectId}/sprints` },
+    { icon: <Map size={18} />, label: t('sidebar.roadmap'), path: `/project/${projectId}/roadmap` },
+    { icon: <List size={18} />, label: t('sidebar.backlog'), path: `/project/${projectId}/backlog` },
+    { icon: <Timer size={18} />, label: t('sidebar.activeSprints'), path: `/project/${projectId}/sprints` },
   ] : [];
 
   const boardItems: NavItem[] = projectId ? [
-    { icon: <Kanban size={18} />, label: 'Board', path: `/project/${projectId}/board` },
+    { icon: <Kanban size={18} />, label: t('sidebar.board'), path: `/project/${projectId}/board` },
   ] : [];
 
   const reportItems: NavItem[] = projectId ? [
-    { icon: <BarChart3 size={18} />, label: 'Reports', path: `/project/${projectId}/reports` },
+    { icon: <BarChart3 size={18} />, label: t('sidebar.reports'), path: `/project/${projectId}/reports` },
   ] : [];
 
   const projectItems: NavItem[] = projectId ? [
-    { icon: <Settings size={18} />, label: 'Settings', path: `/project/${projectId}/settings` },
-    { icon: <Tag size={18} />, label: 'Labels', path: `/project/${projectId}/labels` },
-    { icon: <Component size={18} />, label: 'Components', path: `/project/${projectId}/components` },
+    { icon: <Settings size={18} />, label: t('sidebar.settings'), path: `/project/${projectId}/settings` },
+    { icon: <Tag size={18} />, label: t('sidebar.labels'), path: `/project/${projectId}/labels` },
+    { icon: <Component size={18} />, label: t('sidebar.components'), path: `/project/${projectId}/components` },
   ] : [];
 
   const isActive = (path: string) => location.pathname === path;
@@ -63,7 +65,7 @@ export default function Sidebar() {
           <button
             onClick={() => navigate('/')}
             className="p-2 rounded-md text-text-secondary hover:bg-hover-bg transition-colors"
-            title="All Projects"
+            title={t('sidebar.allProjects')}
           >
             <FolderOpen size={18} />
           </button>
@@ -82,15 +84,15 @@ export default function Sidebar() {
             location.pathname === '/' ? 'bg-selected-bg text-amber-600 font-medium' : 'text-text-secondary hover:bg-hover-bg hover:text-text-primary'
           }`}
         >
-          <LayoutDashboard size={18} /> Dashboard
+          <LayoutDashboard size={18} /> {t('sidebar.dashboard')}
         </button>
 
         {projectId && (
           <>
-            <SidebarSection title="Planning" items={planningItems} isActive={isActive} navigate={navigate} />
-            <SidebarSection title="Board" items={boardItems} isActive={isActive} navigate={navigate} />
-            <SidebarSection title="Reports" items={reportItems} isActive={isActive} navigate={navigate} />
-            <SidebarSection title="Project" items={projectItems} isActive={isActive} navigate={navigate} />
+            <SidebarSection title={t('sidebar.planning')} items={planningItems} isActive={isActive} navigate={navigate} />
+            <SidebarSection title={t('sidebar.board')} items={boardItems} isActive={isActive} navigate={navigate} />
+            <SidebarSection title={t('sidebar.reports')} items={reportItems} isActive={isActive} navigate={navigate} />
+            <SidebarSection title={t('sidebar.project')} items={projectItems} isActive={isActive} navigate={navigate} />
           </>
         )}
       </nav>
@@ -100,19 +102,19 @@ export default function Sidebar() {
           onClick={() => navigate('/')}
           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text-secondary hover:bg-hover-bg transition-colors"
         >
-          <FolderOpen size={18} /> All Projects
+          <FolderOpen size={18} /> {t('sidebar.allProjects')}
         </button>
         <button
           onClick={() => navigate('/projects/new')}
           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-amber-500 hover:bg-hover-bg transition-colors"
         >
-          <Plus size={18} /> Create Project
+          <Plus size={18} /> {t('sidebar.createProject')}
         </button>
         <button
           onClick={() => dispatch({ type: 'TOGGLE_SIDEBAR' })}
           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text-tertiary hover:bg-hover-bg transition-colors"
         >
-          <PanelLeftClose size={18} /> Collapse
+          <PanelLeftClose size={18} /> {t('sidebar.collapse')}
         </button>
       </div>
     </aside>

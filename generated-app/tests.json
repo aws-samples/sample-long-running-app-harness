@@ -542,5 +542,59 @@
       "Verify file name and size displayed in attachment list"
     ],
     "passes": true
+  },
+  {
+    "id": "lang-switcher-opens",
+    "category": "functional",
+    "description": "Language switcher dropdown opens and shows 12 languages",
+    "steps": [
+      "Click the globe icon in the header",
+      "Verify dropdown opens with language options including English, Español, Français, Deutsch, 日本語, 中文"
+    ],
+    "passes": true
+  },
+  {
+    "id": "lang-switch-spanish",
+    "category": "functional",
+    "description": "Switching language to Spanish translates the entire UI",
+    "steps": [
+      "Click language switcher",
+      "Select Español",
+      "Verify Dashboard shows 'Bienvenido a Canopy' and sidebar shows 'Todos los Proyectos'"
+    ],
+    "passes": true
+  },
+  {
+    "id": "lang-switch-japanese",
+    "category": "functional",
+    "description": "Switching language to Japanese translates the entire UI",
+    "steps": [
+      "Click language switcher",
+      "Select 日本語",
+      "Verify Dashboard shows 'Canopyへようこそ' and sidebar shows translated text"
+    ],
+    "passes": true
+  },
+  {
+    "id": "lang-persists-reload",
+    "category": "functional",
+    "description": "Language preference persists after page reload",
+    "steps": [
+      "Switch language to French",
+      "Reload the page",
+      "Verify French translations are still active ('Bienvenue sur Canopy')"
+    ],
+    "passes": true
+  },
+  {
+    "id": "lang-search-filter",
+    "category": "functional",
+    "description": "Language switcher has search functionality to filter languages",
+    "steps": [
+      "Open language switcher dropdown",
+      "Type 'port' in the search field",
+      "Verify only Portuguese appears in filtered results"
+    ],
+    "passes": true
   }
 ]

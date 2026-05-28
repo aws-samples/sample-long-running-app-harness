@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppProvider } from './context/AppContext';
+import { LanguageProvider } from './i18n';
 import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import CreateProject from './pages/CreateProject';
@@ -27,6 +28,7 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
       <AppProvider>
         <BrowserRouter>
           <Routes>
@@ -46,6 +48,7 @@ export default function App() {
           </Routes>
         </BrowserRouter>
       </AppProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
