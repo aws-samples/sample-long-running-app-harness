@@ -3,6 +3,8 @@ import React, { createContext, useContext, useReducer, useEffect, type ReactNode
 interface AppState {
   currentProjectId: string | null;
   sidebarCollapsed: boolean;
+  rightSidebarOpen: boolean;
+  rightSidebarTab: 'activity' | 'team' | 'notes' | 'calendar';
   theme: 'light' | 'dark';
   selectedIssueId: string | null;
   showCreateIssueModal: boolean;
@@ -14,6 +16,9 @@ type AppAction =
   | { type: 'SET_PROJECT'; id: string | null }
   | { type: 'TOGGLE_SIDEBAR' }
   | { type: 'SET_SIDEBAR'; collapsed: boolean }
+  | { type: 'TOGGLE_RIGHT_SIDEBAR' }
+  | { type: 'SET_RIGHT_SIDEBAR'; open: boolean }
+  | { type: 'SET_RIGHT_SIDEBAR_TAB'; tab: 'activity' | 'team' | 'notes' | 'calendar' }
   | { type: 'SET_THEME'; theme: 'light' | 'dark' }
   | { type: 'SELECT_ISSUE'; id: string | null }
   | { type: 'TOGGLE_CREATE_ISSUE' }
@@ -25,6 +30,8 @@ type AppAction =
 const initialState: AppState = {
   currentProjectId: localStorage.getItem('canopy_currentProject') || null,
   sidebarCollapsed: localStorage.getItem('canopy_sidebarCollapsed') === 'true',
+  rightSidebarOpen: localStorage.getItem('canopy_rightSidebarOpen') !== 'false',
+  rightSidebarTab: (localStorage.getItem('canopy_rightSidebarTab') as AppState['rightSidebarTab']) || 'activity',
   theme: (localStorage.getItem('canopy_theme') as 'light' | 'dark') || 'light',
   selectedIssueId: null,
   showCreateIssueModal: false,
@@ -46,6 +53,17 @@ function reducer(state: AppState, action: AppAction): AppState {
     case 'SET_SIDEBAR':
       localStorage.setItem('canopy_sidebarCollapsed', String(action.collapsed));
       return { ...state, sidebarCollapsed: action.collapsed };
+    case 'TOGGLE_RIGHT_SIDEBAR': {
+      const open = !state.rightSidebarOpen;
+      localStorage.setItem('canopy_rightSidebarOpen', String(open));
+      return { ...state, rightSidebarOpen: open };
+    }
+    case 'SET_RIGHT_SIDEBAR':
+      localStorage.setItem('canopy_rightSidebarOpen', String(action.open));
+      return { ...state, rightSidebarOpen: action.open };
+    case 'SET_RIGHT_SIDEBAR_TAB':
+      localStorage.setItem('canopy_rightSidebarTab', action.tab);
+      return { ...state, rightSidebarTab: action.tab, rightSidebarOpen: true };
     case 'SET_THEME':
       localStorage.setItem('canopy_theme', action.theme);
       return { ...state, theme: action.theme };

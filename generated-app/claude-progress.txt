@@ -1,10 +1,66 @@
 CANOPY PROJECT MANAGEMENT APP - PROGRESS UPDATE
 =================================================
-Last Updated: 2026-05-28 (Session 8 - Language Translation Feature - Issue #3)
+Last Updated: 2026-06-03 (Session 9 - Right Sidebar Tabs Feature - Issue #4)
 
-## STATUS: ALL PHASES COMPLETE + LANGUAGE TRANSLATION FEATURE ADDED
-All 4 phases are complete. All phase gates pass. 64 tests total (59 existing + 5 new). 20 CDK tests pass.
-Language translation feature fully implemented: 12 languages, language switcher in header, localStorage persistence.
+## STATUS: ALL PHASES COMPLETE + RIGHT SIDEBAR TABS ADDED
+All 4 phases are complete. All phase gates pass. 68 tests total (64 existing + 4 new). 20 CDK tests pass.
+Right sidebar tabs feature fully implemented: Activity, Team, Notes, Calendar tabs on the right side.
+
+## SESSION 9 - RIGHT SIDEBAR TABS FEATURE (Issue #4)
+
+### What was implemented:
+1. **Right Sidebar Component** (`frontend/src/components/layout/RightSidebar.tsx`):
+   - 4 tabs: Activity, Team, Notes, Calendar
+   - Collapsible (expands to 280px, collapses to 52px icon strip)
+   - data-testid attributes for testing
+   - Active tab shows icon + label, inactive tabs show icons only
+   - Hides automatically when IssueDetailPanel is open (no conflict)
+
+2. **Activity Tab**:
+   - Shows recent activity feed based on project issues
+   - Color-coded icons: completed (green), in-progress (blue), high-priority (rose), created (gray)
+   - Relative time display ("5m ago", "2h ago", etc.)
+   - Empty state when no project is selected
+
+3. **Team Tab**:
+   - Shows all team members with avatar, name, and role
+   - Per-member stats: active tasks count, completed/total ratio
+   - Summary card with total members and active tasks count
+
+4. **Notes Tab**:
+   - Quick notes with localStorage persistence (key: canopy_quick_notes)
+   - Add notes via input + Enter key
+   - Delete notes with hover trash icon
+   - Shows date/time of each note
+   - Empty state with helpful message
+
+5. **Calendar Tab**:
+   - Shows upcoming deadlines grouped: Overdue, This Week, Later
+   - Color-coded sections (rose for overdue, amber for this week)
+   - Mini month calendar view with due date indicators
+   - Click on issue to open detail panel
+
+6. **AppContext Updates** (`frontend/src/context/AppContext.tsx`):
+   - Added `rightSidebarOpen` state (persisted in localStorage)
+   - Added `rightSidebarTab` state (persisted in localStorage)
+   - Actions: TOGGLE_RIGHT_SIDEBAR, SET_RIGHT_SIDEBAR, SET_RIGHT_SIDEBAR_TAB
+
+7. **Layout Integration** (`frontend/src/components/layout/Layout.tsx`):
+   - RightSidebar placed after IssueDetailPanel in the flex layout
+   - Renders on right side of main content area
+
+### New Tests Added (4) - Tests 64-67 (IDs: right-sidebar-visible, right-sidebar-tab-switch, right-sidebar-notes, right-sidebar-collapse)
+- Right sidebar panel is visible with tabs on the right side
+- Right sidebar tabs can be switched between Activity, Team, Notes, and Calendar
+- Right sidebar Notes tab allows adding and deleting quick notes
+- Right sidebar can be collapsed and expanded
+
+### E2E Tests (Playwright)
+- `e2e-tests/right-sidebar.spec.ts`: 4 automated tests all passing
+  - Sidebar visible with all tab icons
+  - Tab switching between all 4 tabs works
+  - Notes tab can add notes
+  - Collapse and expand functionality works
 
 ## SESSION 8 - LANGUAGE TRANSLATION FEATURE (Issue #3)
 

@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import RightSidebar from './RightSidebar';
 import CreateIssueModal from '../CreateIssueModal';
 import SearchModal from '../SearchModal';
 import KeyboardShortcutsModal from '../KeyboardShortcutsModal';
@@ -38,6 +39,7 @@ export default function Layout() {
           </div>
         </main>
         {state.selectedIssueId && <IssueDetailPanel />}
+        <RightSidebar />
       </div>
       {state.showCreateIssueModal && <CreateIssueModal />}
       {state.showSearchModal && <SearchModal />}

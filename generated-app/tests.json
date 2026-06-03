@@ -596,5 +596,50 @@
       "Verify only Portuguese appears in filtered results"
     ],
     "passes": true
+  },
+  {
+    "id": "right-sidebar-visible",
+    "category": "functional",
+    "description": "Right sidebar panel is visible with tabs on the right side",
+    "steps": [
+      "Navigate to dashboard",
+      "Verify right sidebar panel is visible with Activity, Team, Notes, Calendar tab icons"
+    ],
+    "passes": true
+  },
+  {
+    "id": "right-sidebar-tab-switch",
+    "category": "functional",
+    "description": "Right sidebar tabs can be switched between Activity, Team, Notes, and Calendar",
+    "steps": [
+      "Click the Team tab icon in the right sidebar",
+      "Verify Team tab content appears with team member list",
+      "Click the Notes tab icon",
+      "Verify Notes tab shows note input field"
+    ],
+    "passes": true
+  },
+  {
+    "id": "right-sidebar-notes",
+    "category": "functional",
+    "description": "Right sidebar Notes tab allows adding and deleting quick notes",
+    "steps": [
+      "Click Notes tab in right sidebar",
+      "Type a note in the input field and press Enter",
+      "Verify the note appears in the list"
+    ],
+    "passes": true
+  },
+  {
+    "id": "right-sidebar-collapse",
+    "category": "functional",
+    "description": "Right sidebar can be collapsed and expanded",
+    "steps": [
+      "Click the collapse button on the right sidebar",
+      "Verify sidebar collapses to narrow icon strip",
+      "Click a tab icon to expand again",
+      "Verify sidebar expands back to full width"
+    ],
+    "passes": true
   }
 ]
