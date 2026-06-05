@@ -13,7 +13,7 @@
     "test": "echo 'Run tests in individual workspaces'"
   },
   "devDependencies": {
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "^1.60.0",
     "playwright": "^1.59.1"
   }
 }

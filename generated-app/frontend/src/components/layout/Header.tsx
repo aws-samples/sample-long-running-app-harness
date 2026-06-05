@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { getProjectIconComponent } from '../../pages/CreateProject';
 import LanguageSwitcher from '../LanguageSwitcher';
+import PriorityAlertIndicator from '../PriorityAlertIndicator';
 
 export default function Header() {
   const { state, dispatch } = useApp();
@@ -132,6 +133,9 @@ export default function Header() {
           </div>
         )}
       </div>
+
+      {/* Priority Alert Bell */}
+      <PriorityAlertIndicator />
 
       {/* Language Switcher */}
       <LanguageSwitcher />

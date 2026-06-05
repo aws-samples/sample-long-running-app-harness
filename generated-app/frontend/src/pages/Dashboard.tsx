@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useProjects } from '../hooks/useApi';
+import { useProjects, useIssues } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
 import { useTranslation } from '../i18n';
 import { useNavigate } from 'react-router-dom';
@@ -7,12 +7,14 @@ import { TreePine, Plus, FolderOpen, ArrowRight, AlertTriangle, Keyboard, BarCha
 import { formatRelativeDate } from '../lib/utils';
 import { isApiConfigured } from '../api/client';
 import { getProjectIconComponent } from './CreateProject';
+import PriorityAlertBanner from '../components/PriorityAlertBanner';
 
 export default function Dashboard() {
   const { data: projects, isLoading, error } = useProjects();
-  const { dispatch } = useApp();
+  const { state, dispatch } = useApp();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { data: currentProjectIssues } = useIssues(state.currentProjectId || undefined);
 
   const activeProjects = useMemo(() =>
     (projects?.filter(p => !p.isArchived) || [])
@@ -71,6 +73,14 @@ export default function Dashboard() {
           color="bg-amber-500"
         />
       </div>
+
+      {/* Priority Alert Banner */}
+      {currentProjectIssues && currentProjectIssues.length > 0 && (
+        <PriorityAlertBanner
+          issues={currentProjectIssues}
+          onIssueClick={(id) => dispatch({ type: 'SELECT_ISSUE', id })}
+        />
+      )}
 
       {/* Quick actions */}
       {activeProjects.length > 0 && (

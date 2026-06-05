@@ -13,6 +13,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Bookmark, Bug, CheckSquare, Zap, ListTodo, Plus, Filter, User, Calendar, X } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Issue } from '@canopy/shared';
+import PriorityAlertBanner from '../components/PriorityAlertBanner';
 
 const TYPE_ICONS: Record<string, React.ReactNode> = {
   Epic: <Zap size={13} />,
@@ -261,6 +262,12 @@ export default function BoardView() {
         </div>
       )}
 
+      {/* Priority Alert Banner */}
+      <PriorityAlertBanner
+        issues={issues}
+        onIssueClick={(id) => dispatch({ type: 'SELECT_ISSUE', id })}
+      />
+
       {/* Board columns */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: 'calc(100vh - 240px)' }}>
@@ -438,15 +445,23 @@ function IssueCard({ issue, isDragging, onClick }: { issue: Issue; isDragging?: 
   const isOverdue = issue.dueDate && new Date(issue.dueDate) < new Date() && issue.status !== 'done';
   const isDueSoon = issue.dueDate && !isOverdue && issue.status !== 'done' &&
     (new Date(issue.dueDate).getTime() - new Date().getTime()) < 3 * 24 * 60 * 60 * 1000;
+  const isCritical = issue.priority === 'Highest' && issue.status !== 'done';
+  const isHighPriority = issue.priority === 'High' && issue.status !== 'done';
 
   return (
     <div
       onClick={onClick}
+      data-priority={issue.priority}
       className={`bg-card-bg rounded-lg p-3 border cursor-pointer transition-all group ${
         isDragging
           ? 'shadow-lg rotate-1 scale-[1.03] border-amber-400'
-          : 'border-border hover:shadow-md hover:-translate-y-0.5 hover:border-border-focus/40'
+          : isCritical
+            ? 'border-[#BC6C25]/50 shadow-sm shadow-[#BC6C25]/10 hover:shadow-md hover:-translate-y-0.5 hover:border-[#BC6C25]/70'
+            : isHighPriority
+              ? 'border-[#E9C46A]/40 hover:shadow-md hover:-translate-y-0.5 hover:border-[#E9C46A]/60'
+              : 'border-border hover:shadow-md hover:-translate-y-0.5 hover:border-border-focus/40'
       }`}
+      style={isCritical ? { borderLeftWidth: '3px', borderLeftColor: '#BC6C25' } : isHighPriority ? { borderLeftWidth: '3px', borderLeftColor: '#E9C46A' } : {}}
     >
       {/* Type + Key + Priority row */}
       <div className="flex items-center gap-1.5 mb-1.5">

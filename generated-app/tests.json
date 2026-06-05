@@ -641,5 +641,52 @@
       "Verify sidebar expands back to full width"
     ],
     "passes": true
+  },
+  {
+    "id": "priority-alert-bell",
+    "category": "functional",
+    "description": "Priority alert bell icon is visible in header with badge count for critical issues",
+    "steps": [
+      "Navigate to board view with a project selected",
+      "Verify bell icon is visible in the header",
+      "Verify badge count shows number of critical (Highest/High) issues"
+    ],
+    "passes": true
+  },
+  {
+    "id": "priority-alert-dropdown",
+    "category": "functional",
+    "description": "Priority alert bell dropdown shows critical issues list when clicked",
+    "steps": [
+      "Click the bell icon in the header",
+      "Verify dropdown opens with 'Priority Alerts' heading",
+      "Verify critical issues are listed with priority labels (URGENT/HIGH)",
+      "Click an issue in the dropdown to open its detail panel"
+    ],
+    "passes": true
+  },
+  {
+    "id": "priority-alert-banner",
+    "category": "functional",
+    "description": "Priority alert banner appears on board view when critical issues exist",
+    "steps": [
+      "Navigate to board view with Highest/High priority issues present",
+      "Verify alert banner shows with count of critical issues",
+      "Click to expand and see issue list",
+      "Verify dismiss functionality removes individual alerts"
+    ],
+    "passes": true
+  },
+  {
+    "id": "priority-issue-cards",
+    "category": "functional",
+    "description": "Issue cards show enhanced visual indicators for critical priority levels",
+    "steps": [
+      "Navigate to board view with Highest priority issues",
+      "Verify Highest priority cards have left border accent (orange/amber)",
+      "Verify High priority cards have left border accent (yellow)",
+      "Verify priority badge is prominently displayed on cards"
+    ],
+    "passes": true
   }
 ]

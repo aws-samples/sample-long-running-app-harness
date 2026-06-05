@@ -71,7 +71,19 @@ export default function CreateIssueModal() {
           dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
         },
       });
-      toast.success('Issue created successfully');
+      if (priority === 'Highest') {
+        toast.warning('⚠️ Critical issue created! This requires immediate attention.', {
+          duration: 5000,
+          style: { borderLeft: '4px solid #BC6C25' },
+        });
+      } else if (priority === 'High') {
+        toast.warning('High priority issue created — needs attention soon.', {
+          duration: 4000,
+          style: { borderLeft: '4px solid #E9C46A' },
+        });
+      } else {
+        toast.success('Issue created successfully');
+      }
       if (createAnother) {
         setSummary('');
         setDescription('');
