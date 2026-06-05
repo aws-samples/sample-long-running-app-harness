@@ -1,0 +1,13 @@
+Here are examples of tests across all categories and how to verify them:
+
+**Shared (backend-verify.cjs):**
+Running `node backend-verify.cjs --test-id shared-schemas-compile --output-dir screenshots/issue-$ISSUE_NUMBER --command "cd shared && npx tsc --noEmit"` to verify shared schemas compile, then reading the -result.txt and -console.txt files before marking the test as passing.
+
+**Infrastructure (backend-verify.cjs):**
+Running `node backend-verify.cjs --test-id cdk-synth --output-dir screenshots/issue-$ISSUE_NUMBER --command "cd infrastructure && npx cdk synth"` to verify CDK synthesis succeeds, then reading the -result.txt and -console.txt files before marking the test as passing.
+
+**Backend (backend-verify.cjs):**
+Running `node backend-verify.cjs --test-id lambda-create-project --output-dir screenshots/issue-$ISSUE_NUMBER --command "curl -s -w '\n%{http_code}' https://API_URL/projects -X POST -H 'Content-Type: application/json' -d '{\"name\":\"test\"}'"`  to verify the create-project Lambda returns 200, then reading the -result.txt and -console.txt files before marking the test as passing.
+
+**Frontend (playwright-test.cjs):**
+Running `node playwright-test.cjs --url http://localhost:6174 --test-id home-page --output-dir screenshots/issue-$ISSUE_NUMBER --operation full` to take a screenshot and capture console output, then reading both the screenshot PNG and -console.txt files before marking the test as passing.
