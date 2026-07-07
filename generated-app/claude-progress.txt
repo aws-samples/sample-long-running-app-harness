@@ -1,0 +1,267 @@
+CANOPY PROJECT MANAGEMENT APP - PROGRESS UPDATE
+=================================================
+Last Updated: 2026-06-05 (Session 17 - Re-verification of Issue #5)
+
+## STATUS: ALL PHASES COMPLETE + PRIORITY ALERTS VERIFIED
+All 4 phases are complete. All phase gates pass. 72 tests total (68 existing + 4 new). 20 CDK tests pass.
+Priority alerts feature fully implemented and verified: bell icon with badge, alert banner, enhanced card indicators, toast notifications for critical issues.
+- All 5 e2e tests pass (priority-alerts.spec.ts) - re-verified Session 12
+- All 4 test screenshots taken and verified with NO_CONSOLE_ERRORS - re-verified Session 17
+- Frontend build passes ✅ (verified Session 17: 2374 modules, 7.11s)
+- Shared compiles cleanly ✅
+- Infrastructure tests: 20/20 pass ✅
+- Final verification complete: all features working, no regressions
+- Session 17: Re-verified all 4 priority alert tests pass with screenshots and NO_CONSOLE_ERRORS
+
+## SESSION 10 - PRIORITY ALERTS FEATURE (Issue #5)
+
+### What was implemented:
+1. **PriorityAlertIndicator** (`frontend/src/components/PriorityAlertIndicator.tsx`):
+   - Bell icon in the header with badge showing count of critical (Highest/High) issues
+   - Badge pulses amber/orange for Highest priority issues
+   - Click opens dropdown listing all critical issues with priority labels (URGENT/HIGH)
+   - Clicking an issue in the dropdown opens the issue detail panel
+   - Empty state shows "All clear!" when no critical issues exist
+   - data-testid="priority-alert-bell" for testing
+
+2. **PriorityAlertBanner** (`frontend/src/components/PriorityAlertBanner.tsx`):
+   - Displays on Dashboard and Board view when critical issues exist
+   - Shows count of critical issues with Urgent/High breakdown
+   - Expandable to show list of critical issues
+   - Click issue to open detail panel
+   - Dismiss individual alerts or dismiss all
+   - Dismissed alerts persisted in localStorage (key: canopy_dismissed_alerts)
+   - Color-coded: orange/amber for Highest, yellow for High
+   - data-testid="priority-alert-banner" for testing
+
+3. **Enhanced Issue Cards** (`frontend/src/pages/BoardView.tsx`):
+   - Highest priority cards have 3px left border accent (orange #BC6C25)
+   - High priority cards have 3px left border accent (yellow #E9C46A)
+   - Critical cards have shadow glow effect
+   - data-priority attribute on cards for testing
+   - Priority-specific hover states
+
+4. **Critical Issue Toast Notifications** (`frontend/src/components/CreateIssueModal.tsx`):
+   - Creating a Highest priority issue shows warning toast: "⚠️ Critical issue created! This requires immediate attention."
+   - Creating a High priority issue shows warning toast: "High priority issue created — needs attention soon."
+   - Toast has orange/amber left border accent
+   - 5 second duration for urgent, 4 seconds for high
+
+5. **Integration Points**:
+   - Header (`frontend/src/components/layout/Header.tsx`): Added PriorityAlertIndicator
+   - Dashboard (`frontend/src/pages/Dashboard.tsx`): Added PriorityAlertBanner
+   - BoardView (`frontend/src/pages/BoardView.tsx`): Added PriorityAlertBanner + enhanced cards
+
+### New Tests Added (4) - Tests 68-71 (IDs: priority-alert-bell, priority-alert-dropdown, priority-alert-banner, priority-issue-cards)
+- Priority alert bell icon is visible in header with badge count for critical issues
+- Priority alert bell dropdown shows critical issues list when clicked
+- Priority alert banner appears on board view when critical issues exist
+- Issue cards show enhanced visual indicators for critical priority levels
+
+### E2E Tests (Playwright)
+- `e2e-tests/priority-alerts.spec.ts`: 5 automated tests all passing
+  - Bell is visible in header
+  - Badge shows count for critical issues
+  - Dropdown opens on click with "Priority Alerts" heading
+  - Banner appears on board when critical issues exist
+  - Issue cards have 3px left border for Highest priority
+
+## SESSION 9 - RIGHT SIDEBAR TABS FEATURE (Issue #4)
+
+### What was implemented:
+1. **Right Sidebar Component** (`frontend/src/components/layout/RightSidebar.tsx`):
+   - 4 tabs: Activity, Team, Notes, Calendar
+   - Collapsible (expands to 280px, collapses to 52px icon strip)
+   - data-testid attributes for testing
+   - Active tab shows icon + label, inactive tabs show icons only
+   - Hides automatically when IssueDetailPanel is open (no conflict)
+
+2. **Activity Tab**:
+   - Shows recent activity feed based on project issues
+   - Color-coded icons: completed (green), in-progress (blue), high-priority (rose), created (gray)
+   - Relative time display ("5m ago", "2h ago", etc.)
+   - Empty state when no project is selected
+
+3. **Team Tab**:
+   - Shows all team members with avatar, name, and role
+   - Per-member stats: active tasks count, completed/total ratio
+   - Summary card with total members and active tasks count
+
+4. **Notes Tab**:
+   - Quick notes with localStorage persistence (key: canopy_quick_notes)
+   - Add notes via input + Enter key
+   - Delete notes with hover trash icon
+   - Shows date/time of each note
+   - Empty state with helpful message
+
+5. **Calendar Tab**:
+   - Shows upcoming deadlines grouped: Overdue, This Week, Later
+   - Color-coded sections (rose for overdue, amber for this week)
+   - Mini month calendar view with due date indicators
+   - Click on issue to open detail panel
+
+6. **AppContext Updates** (`frontend/src/context/AppContext.tsx`):
+   - Added `rightSidebarOpen` state (persisted in localStorage)
+   - Added `rightSidebarTab` state (persisted in localStorage)
+   - Actions: TOGGLE_RIGHT_SIDEBAR, SET_RIGHT_SIDEBAR, SET_RIGHT_SIDEBAR_TAB
+
+7. **Layout Integration** (`frontend/src/components/layout/Layout.tsx`):
+   - RightSidebar placed after IssueDetailPanel in the flex layout
+   - Renders on right side of main content area
+
+### New Tests Added (4) - Tests 64-67 (IDs: right-sidebar-visible, right-sidebar-tab-switch, right-sidebar-notes, right-sidebar-collapse)
+- Right sidebar panel is visible with tabs on the right side
+- Right sidebar tabs can be switched between Activity, Team, Notes, and Calendar
+- Right sidebar Notes tab allows adding and deleting quick notes
+- Right sidebar can be collapsed and expanded
+
+### E2E Tests (Playwright)
+- `e2e-tests/right-sidebar.spec.ts`: 4 automated tests all passing
+  - Sidebar visible with all tab icons
+  - Tab switching between all 4 tabs works
+  - Notes tab can add notes
+  - Collapse and expand functionality works
+
+## SESSION 8 - LANGUAGE TRANSLATION FEATURE (Issue #3)
+
+### What was implemented:
+1. **i18n Translation System** (`frontend/src/i18n/`):
+   - `translations.ts`: Complete translation dictionaries for 12 languages (EN, ES, FR, DE, JA, ZH, PT, KO, AR, HI, IT, RU)
+   - `LanguageContext.tsx`: React context with `useTranslation` hook, localStorage persistence, RTL support for Arabic
+   - `index.ts`: Clean barrel export
+
+2. **Language Switcher Component** (`frontend/src/components/LanguageSwitcher.tsx`):
+   - Globe icon button in the header
+   - Dropdown with searchable language list
+   - Shows flag emoji and native language name
+   - Active language indicator
+   - Click-outside-to-close behavior
+   - data-testid="language-switcher" for testing
+
+3. **Integrated translations** into core components:
+   - `Header.tsx`: Search placeholder, project dropdown, create button, theme toggle tooltips
+   - `Sidebar.tsx`: All navigation items, section titles, bottom actions
+   - `Dashboard.tsx`: Welcome text, stat labels, quick actions, project cards, tips section
+   - `App.tsx`: Wrapped with LanguageProvider
+
+4. **Features**:
+   - 12 language support (English, Spanish, French, German, Japanese, Chinese, Portuguese, Korean, Arabic, Hindi, Italian, Russian)
+   - Browser language auto-detection on first visit
+   - localStorage persistence (key: canopy_language)
+   - RTL support for Arabic (sets dir="rtl" on html element)
+   - Search/filter functionality in language dropdown
+   - Fallback to English for missing translation keys
+
+### New Tests Added (5) - Tests 59-63 (IDs: lang-switcher-opens, lang-switch-spanish, lang-switch-japanese, lang-persists-reload, lang-search-filter)
+- Language switcher dropdown opens and shows 12 languages
+- Switching language to Spanish translates the entire UI
+- Switching language to Japanese translates the entire UI
+- Language preference persists after page reload
+- Language switcher has search functionality to filter languages
+
+### E2E Tests (Playwright)
+- `e2e-tests/language-switch.spec.ts`: 4 automated tests all passing
+  - Dropdown opens with all language options
+  - Spanish translation works (Bienvenido a Canopy)
+  - Japanese translation works (Canopyへようこそ)
+  - Language persists after reload (French: Bienvenue sur Canopy)
+
+## API URL (UPDATED after deployment)
+https://cqrtckvcg4.execute-api.us-east-1.amazonaws.com
+
+## FRONTEND ENV
+VITE_API_URL=https://cqrtckvcg4.execute-api.us-east-1.amazonaws.com (set in frontend/.env)
+
+## PHASE GATES (ALL PASSING)
+1. shared/ compiles: `cd shared && npx tsc --noEmit` ✅
+2. infrastructure/ synths: `cd infrastructure && npx cdk synth` ✅
+3. infrastructure/ tests: 20/20 pass (`cd infrastructure && npm test`) ✅
+4. frontend/ builds: `cd frontend && npm run build` ✅ (~274KB gzipped)
+5. API endpoints respond: `curl -s $API_URL/projects` returns JSON ✅
+6. Attachment endpoints work: POST/GET/DELETE /issues/:id/attachments ✅
+
+## SESSION 7 - FILE UPLOAD FEATURE VERIFICATION (Issue #2)
+
+### Verified
+1. All infrastructure tests pass (20/20 CDK tests)
+2. Shared schemas compile cleanly
+3. All API endpoints respond correctly:
+   - POST /issues/:id/attachments - creates attachment with pre-signed S3 upload URL ✅
+   - GET /issues/:id/attachments - returns attachment list ✅
+   - GET /attachments/:id/download - returns pre-signed download URL ✅
+   - DELETE /attachments/:id - deletes attachment from S3 and DynamoDB ✅
+4. Frontend UI verified via Playwright tests:
+   - Attachments section visible in issue detail panel ✅
+   - Upload button and drop zone are present ✅
+   - Existing attachments display with filename and size ✅
+5. All 59 tests passing
+6. Frontend build passes
+7. No console errors on any page
+
+### Full Feature Summary (implemented in Session 6)
+1. **Shared schemas** (`shared/src/schemas/attachment.ts`):
+   - CreateAttachmentSchema: issueId, filename, contentType, fileSize (max 50MB)
+   - AttachmentSchema: extends with id, s3Key, uploaderId, timestamps
+   - AttachmentUploadResponseSchema: attachment + uploadUrl
+
+2. **CDK Infrastructure** (`infrastructure/lib/canopy-stack.ts`):
+   - Added S3 bucket `canopy-attachments-v2-{account}-{region}` for file storage
+   - Enabled CORS on bucket for browser uploads
+   - Granted Lambda S3 read/write permissions
+   - Added ATTACHMENT_BUCKET_NAME environment variable to Lambda
+   - Added AttachmentsBucketName stack output
+   - CDK tests updated: 20 tests passing (was 16)
+
+3. **Backend handlers** (`backend/src/handlers/attachments.ts`):
+   - POST /issues/:id/attachments - creates attachment metadata + returns pre-signed S3 upload URL
+   - GET /issues/:id/attachments - lists all attachments for an issue
+   - GET /attachments/:id/download - returns pre-signed S3 download URL
+   - DELETE /attachments/:id - deletes from S3 and DynamoDB
+   - DynamoDB keys: PK=ATTACHMENT#{id}, SK=METADATA, GSI1PK=ISSUE#{issueId}
+
+4. **Frontend UI** (`frontend/src/components/IssueDetailPanel.tsx`):
+   - Attachments section between Description and Child Issues
+   - Drag-and-drop file upload zone
+   - Upload button triggers hidden file input
+   - File list with filename, size, file type icons
+   - Download and delete buttons on hover
+   - Upload progress indicator
+   - Pre-signed URL upload directly to S3
+
+5. **API client** (`frontend/src/api/client.ts`):
+   - listAttachments, createAttachment, deleteAttachment, getDownloadUrl
+
+6. **React Query hooks** (`frontend/src/hooks/useApi.ts`):
+   - useAttachments, useCreateAttachment, useDeleteAttachment, useDownloadUrl
+
+### New Tests Added (9) - Tests 50-58
+- CDK stack includes S3 attachments bucket
+- Lambda has ATTACHMENT_BUCKET_NAME environment variable
+- API endpoint POST /issues/:id/attachments creates attachment with upload URL
+- API endpoint GET /issues/:id/attachments returns attachment list
+- API endpoint GET /attachments/:id/download returns download URL
+- API endpoint DELETE /attachments/:id deletes attachment
+- Issue detail panel shows attachments section
+- File upload button and drop zone are present
+- Uploaded attachments appear in the attachment list
+
+## ALL PAGES (Working and Verified)
+1. Dashboard - Hero gradient text, stats, quick actions, project cards, tips
+2. Board View - Kanban DnD, filters, quick-add, WIP limits, priority badges
+3. Backlog View - Sprint sections, start/complete, move-to-sprint, inline create
+4. Roadmap View - Epic timeline, progress bars, SP aggregation, linked issues
+5. Reports View - 5 stat cards, pie/bar/area charts, completion rate bar
+6. Settings View - 4 tabs, export/import, delete with in-page confirmation
+7. Labels View - Full CRUD, color picker, search, usage counts
+8. Components View - Full CRUD, lead assignment, stats
+9. Active Sprints - Progress cards, issue lists, complete action
+10. Create Project - Form with live preview, Lucide icon picker, color picker
+11. 404 Page - Clean with go back / dashboard buttons
+
+## DESIGN FUSION
+- Everforest color palette: forest greens (#1B4332, #52796F) + amber accents (#D4A373, #BC6C25)
+- Typography: Space Grotesk (display), DM Sans (body), JetBrains Mono (code)
+- CSS custom properties for consistent light/dark theming
+- Alpha-based colors (amber-500/10, bg-info/10) for consistent light/dark rendering
+- Micro-interactions: gradient text, card glow, spring transitions, staggered entries
+- Animations: fade-in, slide-up, scale-in, slide-in-right, skeleton shimmer

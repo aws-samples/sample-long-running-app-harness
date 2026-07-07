@@ -1,0 +1,84 @@
+
+> @canopy/infrastructure@1.0.0 test
+> jest --testNamePattern=S3.*attachments
+
+Bundling asset TestStack/CanopyApiHandler/Code/Stage...
+
+  ...889ed64ee1d4f05bda56620dd6e395138609796ad8b706-building/index.js   75.8kb
+  ...d64ee1d4f05bda56620dd6e395138609796ad8b706-building/index.js.map  293.3kb
+
+⚡ Done in 26ms
+  console.warn
+    [WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin is deprecated.
+      Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
+      This API will be removed in the next major release.
+
+      151 |     const distribution = new cloudfront.Distribution(this, 'CanopyDistribution', {
+      152 |       defaultBehavior: {
+    > 153 |         origin: new origins.S3Origin(frontendBucket, {
+          |                 ^
+      154 |           originAccessIdentity,
+      155 |         }),
+      156 |         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+
+      at Proxy.print (../node_modules/aws-cdk-lib/.warnings.jsii.js:11:146)
+      at new S3Origin (../node_modules/aws-cdk-lib/aws-cloudfront-origins/lib/s3-origin.js:1:848)
+      at new CanopyStack (lib/canopy-stack.ts:153:17)
+      at Object.<anonymous> (test/canopy-stack.test.ts:10:19)
+
+  console.warn
+    [WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin#bind is deprecated.
+      Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
+      This API will be removed in the next major release.
+
+      149 |     frontendBucket.grantRead(originAccessIdentity);
+      150 |
+    > 151 |     const distribution = new cloudfront.Distribution(this, 'CanopyDistribution', {
+          |                          ^
+      152 |       defaultBehavior: {
+      153 |         origin: new origins.S3Origin(frontendBucket, {
+      154 |           originAccessIdentity,
+
+      at Proxy.print (../node_modules/aws-cdk-lib/.warnings.jsii.js:11:146)
+      at S3Origin.bind (../node_modules/aws-cdk-lib/aws-cloudfront-origins/lib/s3-origin.js:1:1477)
+      at WrappedClass.addOrigin (../node_modules/aws-cdk-lib/aws-cloudfront/lib/distribution.js:1:24277)
+      at new Distribution2 (../node_modules/aws-cdk-lib/aws-cloudfront/lib/distribution.js:1:13267)
+      at new Distribution2 (../node_modules/aws-cdk-lib/core/lib/prop-injectable.js:1:957)
+      at new CanopyStack (lib/canopy-stack.ts:151:26)
+      at Object.<anonymous> (test/canopy-stack.test.ts:10:19)
+
+PASS test/canopy-stack.test.ts (13.149 s)
+  CanopyStack
+    ○ skipped matches snapshot
+    DynamoDB
+      ○ skipped creates a DynamoDB table with correct key schema
+      ○ skipped DynamoDB table has three GSIs
+      ○ skipped DynamoDB table has point-in-time recovery enabled
+    Lambda
+      ○ skipped creates a Lambda function with Node.js 20 runtime
+      ○ skipped Lambda has TABLE_NAME environment variable
+      ○ skipped Lambda has ATTACHMENT_BUCKET_NAME environment variable
+    API Gateway
+      ○ skipped creates an HTTP API
+      ○ skipped API Gateway has CORS configured
+    S3 and CloudFront
+      ✓ creates an S3 bucket for attachments (8 ms)
+      ○ skipped creates an S3 bucket for frontend
+      ○ skipped creates a CloudFront distribution
+      ○ skipped CloudFront has SPA routing error responses
+    IAM
+      ○ skipped Lambda has DynamoDB read/write policy
+    S3 Attachments IAM
+      ✓ Lambda has S3 read/write policy for attachments (3 ms)
+    Stack Outputs
+      ○ skipped exports ApiUrl
+      ○ skipped exports FrontendBucketName
+      ○ skipped exports DistributionId
+      ○ skipped exports DistributionDomain
+      ○ skipped exports AttachmentsBucketName
+
+Test Suites: 1 passed, 1 total
+Tests:       18 skipped, 2 passed, 20 total
+Snapshots:   0 total
+Time:        13.474 s, estimated 14 s
+Ran all test suites with tests matching "S3.*attachments".

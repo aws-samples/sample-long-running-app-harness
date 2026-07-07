@@ -1,0 +1,692 @@
+[
+  {
+    "category": "shared",
+    "description": "Shared schemas compile with no TypeScript errors",
+    "steps": [
+      "Run cd shared && npx tsc --noEmit",
+      "Verify exit code 0"
+    ],
+    "passes": true
+  },
+  {
+    "category": "shared",
+    "description": "Shared package builds successfully",
+    "steps": [
+      "Run cd shared && npm run build",
+      "Verify dist/ output exists"
+    ],
+    "passes": true
+  },
+  {
+    "category": "shared",
+    "description": "Shared schemas export all expected types",
+    "steps": [
+      "Check shared/src/index.ts exports schemas, types, and endpoints"
+    ],
+    "passes": true
+  },
+  {
+    "category": "shared",
+    "description": "Zod schemas validate correct input",
+    "steps": [
+      "Import CreateProjectSchema",
+      "Parse valid project data",
+      "Verify no errors"
+    ],
+    "passes": true
+  },
+  {
+    "category": "shared",
+    "description": "Zod schemas reject invalid input",
+    "steps": [
+      "Import CreateProjectSchema",
+      "Parse invalid data",
+      "Verify ZodError thrown"
+    ],
+    "passes": true
+  },
+  {
+    "category": "infrastructure",
+    "description": "CDK stack synthesizes successfully",
+    "steps": [
+      "Run cd infrastructure && npx cdk synth",
+      "Verify CloudFormation template produced"
+    ],
+    "passes": true
+  },
+  {
+    "category": "infrastructure",
+    "description": "CDK tests pass - DynamoDB table has correct key schema",
+    "steps": [
+      "Run cd infrastructure && npm test",
+      "Verify DynamoDB test passes"
+    ],
+    "passes": true
+  },
+  {
+    "category": "infrastructure",
+    "description": "CDK tests pass - Lambda has Node.js 20 runtime",
+    "steps": [
+      "Run cd infrastructure && npm test",
+      "Verify Lambda runtime test passes"
+    ],
+    "passes": true
+  },
+  {
+    "category": "infrastructure",
+    "description": "CDK tests pass - API Gateway has CORS configured",
+    "steps": [
+      "Run cd infrastructure && npm test",
+      "Verify CORS test passes"
+    ],
+    "passes": true
+  },
+  {
+    "category": "infrastructure",
+    "description": "CDK tests pass - All stack outputs exported",
+    "steps": [
+      "Run cd infrastructure && npm test",
+      "Verify output tests pass"
+    ],
+    "passes": true
+  },
+  {
+    "category": "infrastructure",
+    "description": "CDK tests pass - All 20 tests green",
+    "steps": [
+      "Run cd infrastructure && npm test",
+      "Verify 20 tests passed"
+    ],
+    "passes": true
+  },
+  {
+    "category": "backend",
+    "description": "API endpoint GET /projects returns 200 with array",
+    "steps": [
+      "curl -s $API_URL/projects",
+      "Verify 200 status and JSON array"
+    ],
+    "passes": true
+  },
+  {
+    "category": "backend",
+    "description": "API endpoint POST /projects creates a project",
+    "steps": [
+      "curl -s -X POST $API_URL/projects with valid body",
+      "Verify 201 status"
+    ],
+    "passes": true
+  },
+  {
+    "category": "backend",
+    "description": "API endpoint POST /projects/:id/issues creates an issue",
+    "steps": [
+      "curl -s -X POST with valid issue body",
+      "Verify 201 status with issue key"
+    ],
+    "passes": true
+  },
+  {
+    "category": "backend",
+    "description": "API endpoint GET /health returns 200",
+    "steps": [
+      "curl -s $API_URL/health",
+      "Verify 200 status with ok"
+    ],
+    "passes": true
+  },
+  {
+    "category": "backend",
+    "description": "API returns 400 for invalid request body",
+    "steps": [
+      "POST /projects with invalid data",
+      "Verify 400 VALIDATION_ERROR"
+    ],
+    "passes": true
+  },
+  {
+    "category": "backend",
+    "description": "API endpoint GET /projects/:id/sprints returns array",
+    "steps": [
+      "curl -s $API_URL/projects/:id/sprints",
+      "Verify 200 with array"
+    ],
+    "passes": true
+  },
+  {
+    "category": "backend",
+    "description": "API endpoint GET /search returns search results",
+    "steps": [
+      "curl -s $API_URL/search?q=test",
+      "Verify 200 with issues/projects arrays"
+    ],
+    "passes": true
+  },
+  {
+    "category": "backend",
+    "description": "DynamoDB table canopy-table exists and has data",
+    "steps": [
+      "aws dynamodb scan --table-name canopy-table --max-items 1",
+      "Verify items returned"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Dashboard loads and shows projects from API",
+    "steps": [
+      "Navigate to /",
+      "Take screenshot",
+      "Verify project cards visible"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Dashboard shows statistics (Active Projects, Total Issues)",
+    "steps": [
+      "Navigate to /",
+      "Take screenshot",
+      "Verify stat cards visible with numbers"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Create Project form works",
+    "steps": [
+      "Navigate to /projects/new",
+      "Fill form and submit",
+      "Verify redirect to board"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Board view shows kanban columns",
+    "steps": [
+      "Select a project",
+      "Navigate to board",
+      "Verify 4 columns visible"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Board view drag and drop changes issue status",
+    "steps": [
+      "Drag issue card between columns",
+      "Verify status updates"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Create Issue modal opens with button click",
+    "steps": [
+      "Click Create button",
+      "Verify modal appears with form fields"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Create Issue submits and issue appears on board",
+    "steps": [
+      "Fill create issue form",
+      "Submit",
+      "Verify issue appears"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Issue detail panel slides in when clicking an issue",
+    "steps": [
+      "Click an issue card",
+      "Verify detail panel slides in from right"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Issue detail panel shows summary, status, priority",
+    "steps": [
+      "Open issue detail",
+      "Verify fields displayed correctly"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Issue status can be changed from detail panel",
+    "steps": [
+      "Open issue",
+      "Click status button",
+      "Verify status updates"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Backlog view shows issues grouped by sprint",
+    "steps": [
+      "Navigate to backlog",
+      "Verify sprint sections and backlog section"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Sprint can be created from backlog view",
+    "steps": [
+      "Click Create Sprint",
+      "Verify new sprint section appears"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Sprint can be started and completed",
+    "steps": [
+      "Click Start Sprint, then Complete Sprint",
+      "Verify status transitions"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Search modal opens with Cmd+K",
+    "steps": [
+      "Press Cmd+K",
+      "Verify search modal appears with input"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Search returns matching issues",
+    "steps": [
+      "Type search query",
+      "Verify matching issues appear in results"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Sidebar navigation works for all views",
+    "steps": [
+      "Click each sidebar item",
+      "Verify correct page loads"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Sidebar collapses and expands",
+    "steps": [
+      "Click collapse toggle",
+      "Verify sidebar narrows to icons"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Project selector dropdown shows all projects",
+    "steps": [
+      "Click project selector in header",
+      "Verify dropdown with projects"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Roadmap view shows epics",
+    "steps": [
+      "Navigate to roadmap",
+      "Verify epic cards or empty state"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Reports view shows charts",
+    "steps": [
+      "Navigate to reports",
+      "Verify pie charts and bar charts visible"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Settings view allows project name update",
+    "steps": [
+      "Navigate to settings",
+      "Edit name",
+      "Save",
+      "Verify update"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Settings view has delete project with confirmation",
+    "steps": [
+      "Navigate to settings",
+      "Click delete",
+      "Verify confirmation dialog"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Issue comments can be added",
+    "steps": [
+      "Open issue detail",
+      "Type comment",
+      "Submit",
+      "Verify comment appears"
+    ],
+    "passes": true
+  },
+  {
+    "category": "style",
+    "description": "Dashboard uses forest canopy color palette",
+    "steps": [
+      "Take screenshot",
+      "Verify green header, amber accents, warm off-white bg"
+    ],
+    "passes": true
+  },
+  {
+    "category": "style",
+    "description": "Typography uses Space Grotesk for headers and DM Sans for body",
+    "steps": [
+      "Take screenshot",
+      "Verify font families in headings and body text"
+    ],
+    "passes": true
+  },
+  {
+    "category": "style",
+    "description": "Cards have proper borders, shadows, and border-radius",
+    "steps": [
+      "Take screenshot",
+      "Verify card styling matches design spec"
+    ],
+    "passes": true
+  },
+  {
+    "category": "style",
+    "description": "Buttons use amber accent color and proper hover states",
+    "steps": [
+      "Take screenshot",
+      "Verify button colors and styling"
+    ],
+    "passes": true
+  },
+  {
+    "category": "style",
+    "description": "Loading states show skeleton shimmer animations",
+    "steps": [
+      "Take screenshot during load",
+      "Verify skeleton animation visible"
+    ],
+    "passes": true
+  },
+  {
+    "category": "style",
+    "description": "Staggered entrance animations on dashboard cards",
+    "steps": [
+      "Refresh dashboard",
+      "Verify cards animate in sequence"
+    ],
+    "passes": true
+  },
+  {
+    "category": "style",
+    "description": "Board view columns have proper spacing and styling",
+    "steps": [
+      "Navigate to board",
+      "Verify column headers, spacing, card styling"
+    ],
+    "passes": true
+  },
+  {
+    "category": "style",
+    "description": "Issue detail panel has smooth slide-in animation",
+    "steps": [
+      "Click issue",
+      "Verify panel slides in from right"
+    ],
+    "passes": true
+  },
+  {
+    "category": "infrastructure",
+    "description": "CDK stack includes S3 attachments bucket",
+    "steps": [
+      "Run cd infrastructure && npm test",
+      "Verify S3 attachments bucket test passes"
+    ],
+    "passes": true
+  },
+  {
+    "category": "infrastructure",
+    "description": "Lambda has ATTACHMENT_BUCKET_NAME environment variable",
+    "steps": [
+      "Run cd infrastructure && npm test",
+      "Verify Lambda env var test passes"
+    ],
+    "passes": true
+  },
+  {
+    "category": "backend",
+    "description": "API endpoint POST /issues/:id/attachments creates attachment with upload URL",
+    "steps": [
+      "POST attachment metadata to API",
+      "Verify 201 response with uploadUrl"
+    ],
+    "passes": true
+  },
+  {
+    "category": "backend",
+    "description": "API endpoint GET /issues/:id/attachments returns attachment list",
+    "steps": [
+      "GET attachments for issue",
+      "Verify 200 with array of attachments"
+    ],
+    "passes": true
+  },
+  {
+    "category": "backend",
+    "description": "API endpoint GET /attachments/:id/download returns download URL",
+    "steps": [
+      "GET download URL for attachment",
+      "Verify 200 with downloadUrl"
+    ],
+    "passes": true
+  },
+  {
+    "category": "backend",
+    "description": "API endpoint DELETE /attachments/:id deletes attachment",
+    "steps": [
+      "DELETE attachment",
+      "Verify 200 with success:true"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Issue detail panel shows attachments section",
+    "steps": [
+      "Open issue detail panel",
+      "Verify attachments section with upload button and drop zone visible"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "File upload button and drop zone are present",
+    "steps": [
+      "Open issue detail panel",
+      "Click Upload button",
+      "Verify hidden file input is triggered"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Uploaded attachments appear in the attachment list",
+    "steps": [
+      "Open issue with attachments",
+      "Verify file name and size displayed in attachment list"
+    ],
+    "passes": true
+  },
+  {
+    "id": "lang-switcher-opens",
+    "category": "functional",
+    "description": "Language switcher dropdown opens and shows 12 languages",
+    "steps": [
+      "Click the globe icon in the header",
+      "Verify dropdown opens with language options including English, Español, Français, Deutsch, 日本語, 中文"
+    ],
+    "passes": true
+  },
+  {
+    "id": "lang-switch-spanish",
+    "category": "functional",
+    "description": "Switching language to Spanish translates the entire UI",
+    "steps": [
+      "Click language switcher",
+      "Select Español",
+      "Verify Dashboard shows 'Bienvenido a Canopy' and sidebar shows 'Todos los Proyectos'"
+    ],
+    "passes": true
+  },
+  {
+    "id": "lang-switch-japanese",
+    "category": "functional",
+    "description": "Switching language to Japanese translates the entire UI",
+    "steps": [
+      "Click language switcher",
+      "Select 日本語",
+      "Verify Dashboard shows 'Canopyへようこそ' and sidebar shows translated text"
+    ],
+    "passes": true
+  },
+  {
+    "id": "lang-persists-reload",
+    "category": "functional",
+    "description": "Language preference persists after page reload",
+    "steps": [
+      "Switch language to French",
+      "Reload the page",
+      "Verify French translations are still active ('Bienvenue sur Canopy')"
+    ],
+    "passes": true
+  },
+  {
+    "id": "lang-search-filter",
+    "category": "functional",
+    "description": "Language switcher has search functionality to filter languages",
+    "steps": [
+      "Open language switcher dropdown",
+      "Type 'port' in the search field",
+      "Verify only Portuguese appears in filtered results"
+    ],
+    "passes": true
+  },
+  {
+    "id": "right-sidebar-visible",
+    "category": "functional",
+    "description": "Right sidebar panel is visible with tabs on the right side",
+    "steps": [
+      "Navigate to dashboard",
+      "Verify right sidebar panel is visible with Activity, Team, Notes, Calendar tab icons"
+    ],
+    "passes": true
+  },
+  {
+    "id": "right-sidebar-tab-switch",
+    "category": "functional",
+    "description": "Right sidebar tabs can be switched between Activity, Team, Notes, and Calendar",
+    "steps": [
+      "Click the Team tab icon in the right sidebar",
+      "Verify Team tab content appears with team member list",
+      "Click the Notes tab icon",
+      "Verify Notes tab shows note input field"
+    ],
+    "passes": true
+  },
+  {
+    "id": "right-sidebar-notes",
+    "category": "functional",
+    "description": "Right sidebar Notes tab allows adding and deleting quick notes",
+    "steps": [
+      "Click Notes tab in right sidebar",
+      "Type a note in the input field and press Enter",
+      "Verify the note appears in the list"
+    ],
+    "passes": true
+  },
+  {
+    "id": "right-sidebar-collapse",
+    "category": "functional",
+    "description": "Right sidebar can be collapsed and expanded",
+    "steps": [
+      "Click the collapse button on the right sidebar",
+      "Verify sidebar collapses to narrow icon strip",
+      "Click a tab icon to expand again",
+      "Verify sidebar expands back to full width"
+    ],
+    "passes": true
+  },
+  {
+    "id": "priority-alert-bell",
+    "category": "functional",
+    "description": "Priority alert bell icon is visible in header with badge count for critical issues",
+    "steps": [
+      "Navigate to board view with a project selected",
+      "Verify bell icon is visible in the header",
+      "Verify badge count shows number of critical (Highest/High) issues"
+    ],
+    "passes": true
+  },
+  {
+    "id": "priority-alert-dropdown",
+    "category": "functional",
+    "description": "Priority alert bell dropdown shows critical issues list when clicked",
+    "steps": [
+      "Click the bell icon in the header",
+      "Verify dropdown opens with 'Priority Alerts' heading",
+      "Verify critical issues are listed with priority labels (URGENT/HIGH)",
+      "Click an issue in the dropdown to open its detail panel"
+    ],
+    "passes": true
+  },
+  {
+    "id": "priority-alert-banner",
+    "category": "functional",
+    "description": "Priority alert banner appears on board view when critical issues exist",
+    "steps": [
+      "Navigate to board view with Highest/High priority issues present",
+      "Verify alert banner shows with count of critical issues",
+      "Click to expand and see issue list",
+      "Verify dismiss functionality removes individual alerts"
+    ],
+    "passes": true
+  },
+  {
+    "id": "priority-issue-cards",
+    "category": "functional",
+    "description": "Issue cards show enhanced visual indicators for critical priority levels",
+    "steps": [
+      "Navigate to board view with Highest priority issues",
+      "Verify Highest priority cards have left border accent (orange/amber)",
+      "Verify High priority cards have left border accent (yellow)",
+      "Verify priority badge is prominently displayed on cards"
+    ],
+    "passes": true
+  }
+]

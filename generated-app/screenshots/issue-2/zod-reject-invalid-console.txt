@@ -1,0 +1,4 @@
+Project: correctly rejected empty input
+Issue: correctly rejected empty summary
+Attachment: correctly rejected negative fileSize
+All invalid inputs correctly rejected

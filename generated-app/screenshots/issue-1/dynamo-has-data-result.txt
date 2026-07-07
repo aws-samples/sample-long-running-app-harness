@@ -1,0 +1,10 @@
+VERIFIED_BY: backend-verify.cjs
+TIMESTAMP: 2026-04-20T16:57:24.965Z
+COMMAND: aws dynamodb scan --table-name canopy-main-table --max-items 1 --region us-east-1 --query 'Count'
+EXIT_CODE: 0
+RESULT: PASS
+
+--- STDOUT ---
+146
+
+--- STDERR ---

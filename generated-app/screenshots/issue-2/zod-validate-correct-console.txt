@@ -1,0 +1,4 @@
+Project: {"name":"Test","key":"TST"}
+Issue: {"projectId":"00000000-0000-0000-0000-000000000001","type":"Task","summary":"Task 1","priority":"Medium","labels":[],"components":[]}
+Attachment: {"issueId":"00000000-0000-0000-0000-000000000001","filename":"doc.pdf","contentType":"application/pdf","fileSize":1024}
+All Zod validations passed

@@ -1,0 +1,15 @@
+      ○ skipped Lambda has DynamoDB read/write policy
+    S3 Attachments IAM
+      ○ skipped Lambda has S3 read/write policy for attachments
+    Stack Outputs
+      ✓ exports ApiUrl (5 ms)
+      ✓ exports FrontendBucketName (1 ms)
+      ✓ exports DistributionId
+      ✓ exports DistributionDomain (1 ms)
+      ✓ exports AttachmentsBucketName (1 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       15 skipped, 5 passed, 20 total
+Snapshots:   0 total
+Time:        13.277 s
+Ran all test suites with tests matching "exports".

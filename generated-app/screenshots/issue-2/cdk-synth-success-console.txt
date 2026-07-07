@@ -1,0 +1,14 @@
+Bundling asset CanopyStack/CanopyApiHandler/Code/Stage...
+
+  ...40c588fcda755211c5172df784a5eb36582c444a51bff0-building/index.js   75.8kb
+  ...88fcda755211c5172df784a5eb36582c444a51bff0-building/index.js.map  292.2kb
+
+⚡ Done in 24ms
+[WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin is deprecated.
+  Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
+  This API will be removed in the next major release.
+[WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin#bind is deprecated.
+  Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
+  This API will be removed in the next major release.
+75 feature flags are not configured. Run 'cdk flags --unstable=flags' to learn more.
+CDK SYNTH SUCCESS

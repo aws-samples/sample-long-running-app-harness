@@ -1,0 +1,12 @@
+VERIFIED_BY: backend-verify.cjs
+TIMESTAMP: 2026-04-20T16:56:58.202Z
+COMMAND: cd infrastructure && npx cdk synth 2>&1 | tail -3
+EXIT_CODE: 0
+RESULT: PASS
+
+--- STDOUT ---
+    Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
+
+75 feature flags are not configured. Run 'cdk flags --unstable=flags' to learn more.
+
+--- STDERR ---
