@@ -409,6 +409,48 @@ AGENT_RUNTIME_DIR = Path("/app/workspace/agent-runtime")
 AGENT_BRANCH = "agent-runtime"
 BASE_BRANCH = os.environ.get("BASE_BRANCH", "main")
 
+# Working directory within the repo (default: generated-app, use "." for repo root)
+WORK_DIR = os.environ.get("WORK_DIR", "generated-app")
+
+
+def discover_repo_harness(build_dir: Path, project_name: str) -> bool:
+    """Check for .harness/PROJECT_HARNESS.md in the cloned repo.
+
+    If found, copies it to /app/prompts/{project_name}/ so claude_code.py
+    can discover it via the normal prompts loading path. This allows
+    target repos to be self-describing without baking config into the Docker image.
+
+    Returns True if a repo-level harness was found and installed.
+    """
+    repo_harness = build_dir / ".harness" / "PROJECT_HARNESS.md"
+    if not repo_harness.exists():
+        return False
+
+    print(f"📋 Found .harness/PROJECT_HARNESS.md in cloned repo")
+
+    # Create the prompts directory for this project in the Docker image
+    target_dir = Path("/app/prompts") / project_name
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    # Copy the harness file (don't overwrite if Docker image already has one)
+    target_path = target_dir / "PROJECT_HARNESS.md"
+    if target_path.exists():
+        print(f"   ⚠️ Docker image already has prompts/{project_name}/PROJECT_HARNESS.md — using Docker version")
+        return True
+
+    shutil.copy2(repo_harness, target_path)
+    print(f"   ✅ Installed to prompts/{project_name}/PROJECT_HARNESS.md")
+
+    # Also copy any other files from .harness/ (e.g., DEBUGGING_GUIDE.md, system_prompt.txt)
+    for item in (build_dir / ".harness").iterdir():
+        if item.is_file() and item.name != "PROJECT_HARNESS.md":
+            dest = target_dir / item.name
+            if not dest.exists():
+                shutil.copy2(item, dest)
+                print(f"   ✅ Installed .harness/{item.name}")
+
+    return True
+
 # Backlog file path (ephemeral - state is recovered from git on session start)
 BACKLOG_FILE_PATH = AGENT_RUNTIME_DIR / "human_backlog.json"
 
@@ -530,9 +572,12 @@ def setup_agent_runtime(
     # Set up post-commit hook for automatic pushing
     setup_post_commit_hook(AGENT_RUNTIME_DIR, github_repo, AGENT_BRANCH)
 
-    # Ensure generated-app directory exists
-    generated_app_dir = AGENT_RUNTIME_DIR / "generated-app"
-    generated_app_dir.mkdir(exist_ok=True)
+    # Ensure working directory exists (skip mkdir for repo root mode)
+    if WORK_DIR == ".":
+        generated_app_dir = AGENT_RUNTIME_DIR
+    else:
+        generated_app_dir = AGENT_RUNTIME_DIR / WORK_DIR
+        generated_app_dir.mkdir(exist_ok=True)
 
     # Set up GitManager for commit tracking if available
     git_manager = None
@@ -1427,10 +1472,11 @@ def upload_screenshots_to_s3(
 
     # Only scan specific directories where actual screenshots are saved
     # This excludes documentation PNGs and other assets in the repo
+    work_subdir = build_dir if WORK_DIR == "." else build_dir / WORK_DIR
     screenshot_dirs = [
-        build_dir / "generated-app" / "screenshots",
-        build_dir / "generated-app" / "test-results",
-        build_dir / "generated-app" / "playwright-report",
+        work_subdir / "screenshots",
+        work_subdir / "test-results",
+        work_subdir / "playwright-report",
         build_dir / "screenshots",
         build_dir / "test-results",
     ]
@@ -1731,12 +1777,14 @@ def run_agent_background(
 
         project_name = os.environ.get("PROJECT_NAME", "canopy")
 
+        work_path = build_dir if WORK_DIR == "." else build_dir / WORK_DIR
+
         if is_enhancement and feature_request_path:
-            # Enhancement mode - enhance existing generated-app/
+            # Enhancement mode - enhance existing project
             cmd = [
                 "python", "/app/claude_code.py",
                 "--enhance-feature", str(feature_request_path),
-                "--existing-codebase", str(build_dir / "generated-app"),
+                "--existing-codebase", str(work_path),
                 "--project", project_name,
                 "--model", model,
                 "--skip-git-init"  # Don't create nested .git - use cloned repo's git
@@ -1747,7 +1795,7 @@ def run_agent_background(
                 "python", "/app/claude_code.py",
                 "--project", project_name,
                 "--model", model,
-                "--output-dir", str(build_dir / "generated-app"),
+                "--output-dir", str(work_path),
                 "--skip-git-init"  # Don't create nested .git - use cloned repo's git
             ]
         logger.info(f"Using project: {project_name}")
@@ -1909,6 +1957,18 @@ async def handler(payload: Dict[str, Any], context: Any) -> Iterator[Dict[str, A
     github_repo = payload.get('github_repo', os.environ.get('GITHUB_REPO'))
     resume_session = payload.get('resume_session', False)
 
+    # Per-project overrides from payload (set by target repo's trigger workflow)
+    # These take precedence over runtime env vars so multiple projects can share one runtime
+    global WORK_DIR, BASE_BRANCH
+    payload_base_branch = payload.get('base_branch', '')
+    payload_work_dir = payload.get('work_dir', '')
+    if payload_base_branch:
+        BASE_BRANCH = payload_base_branch
+        print(f"📋 Using base_branch from payload: {BASE_BRANCH}")
+    if payload_work_dir:
+        WORK_DIR = payload_work_dir
+        print(f"📋 Using work_dir from payload: {WORK_DIR}")
+
     # Set ISSUE_NUMBER in environment for subprocess to access (for CloudWatch log filtering)
     if issue_number:
         os.environ['ISSUE_NUMBER'] = str(issue_number)
@@ -1982,6 +2042,10 @@ async def handler(payload: Dict[str, Any], context: Any) -> Iterator[Dict[str, A
                 issue_number=issue_number
             )
 
+            # Discover .harness/ config from the cloned repo (for existing projects)
+            project_name = os.environ.get("PROJECT_NAME", "canopy")
+            discover_repo_harness(build_dir, project_name)
+
             # Store current issue and session ID in SSM for health monitor to read
             # (GitHub Actions can't access the container, so we use SSM)
             store_session_state_ssm(issue_number, session_id=context.session_id)
@@ -2031,7 +2095,11 @@ async def handler(payload: Dict[str, Any], context: Any) -> Iterator[Dict[str, A
                 print(f"⚠️ Failed to sync backlog at startup: {e}")
 
             # Check if this is an enhancement (generated-app already exists)
-            is_enhancement = (build_dir / "generated-app" / "package.json").exists()
+            is_enhancement_dir = build_dir if WORK_DIR == "." else build_dir / WORK_DIR
+            is_enhancement = any(
+                (is_enhancement_dir / f).exists()
+                for f in ["package.json", "Cargo.toml", "go.mod", "pyproject.toml", "Makefile"]
+            )
 
             # Write FEATURE_REQUEST.md for the agent
             feature_request = f"""# Feature Request: Issue #{issue_number}
@@ -2047,7 +2115,7 @@ All work should be committed to the `{AGENT_BRANCH}` branch.
 Commits should reference this issue: `Ref: #{issue_number}`
 
 ## Mode
-{"Enhancement" if is_enhancement else "Full Build"} - {"Modify existing app in generated-app/" if is_enhancement else "Create new app in generated-app/"}
+{"Enhancement" if is_enhancement else "Full Build"} - {"Modify existing app in " + WORK_DIR + "/" if is_enhancement else "Create new app in " + WORK_DIR + "/"}
 """
             feature_request_path = build_dir / "FEATURE_REQUEST.md"
             feature_request_path.write_text(feature_request)
@@ -2385,7 +2453,11 @@ Progress will continue from where the previous session left off.""")
                         }
 
                         # Write new FEATURE_REQUEST.md
-                        is_enhancement = (build_dir / "generated-app" / "package.json").exists()
+                        is_enhancement_dir = build_dir if WORK_DIR == "." else build_dir / WORK_DIR
+                        is_enhancement = any(
+                            (is_enhancement_dir / f).exists()
+                            for f in ["package.json", "Cargo.toml", "go.mod", "pyproject.toml", "Makefile"]
+                        )
                         feature_request = f"""# Feature Request: Issue #{issue_number}
 
 ## Title
@@ -2399,7 +2471,7 @@ All work should be committed to the `{AGENT_BRANCH}` branch.
 Commits should reference this issue: `Ref: #{issue_number}`
 
 ## Mode
-{"Enhancement" if is_enhancement else "Full Build"} - {"Modify existing app in generated-app/" if is_enhancement else "Create new app in generated-app/"}
+{"Enhancement" if is_enhancement else "Full Build"} - {"Modify existing app in " + WORK_DIR + "/" if is_enhancement else "Create new app in " + WORK_DIR + "/"}
 """
                         feature_request_path = build_dir / "FEATURE_REQUEST.md"
                         feature_request_path.write_text(feature_request)
@@ -2590,7 +2662,11 @@ Commits should reference this issue: `Ref: #{issue_number}`
                         }
 
                         # Write new FEATURE_REQUEST.md
-                        is_enhancement = (build_dir / "generated-app" / "package.json").exists()
+                        is_enhancement_dir = build_dir if WORK_DIR == "." else build_dir / WORK_DIR
+                        is_enhancement = any(
+                            (is_enhancement_dir / f).exists()
+                            for f in ["package.json", "Cargo.toml", "go.mod", "pyproject.toml", "Makefile"]
+                        )
                         feature_request = f"""# Feature Request: Issue #{issue_number}
 
 ## Title
@@ -2604,7 +2680,7 @@ All work should be committed to the `{AGENT_BRANCH}` branch.
 Commits should reference this issue: `Ref: #{issue_number}`
 
 ## Mode
-{"Enhancement" if is_enhancement else "Full Build"} - {"Modify existing app in generated-app/" if is_enhancement else "Create new app in generated-app/"}
+{"Enhancement" if is_enhancement else "Full Build"} - {"Modify existing app in " + WORK_DIR + "/" if is_enhancement else "Create new app in " + WORK_DIR + "/"}
 """
                         feature_request_path = build_dir / "FEATURE_REQUEST.md"
                         feature_request_path.write_text(feature_request)
@@ -3131,10 +3207,11 @@ def _find_agent_state_file() -> Optional[Path]:
     """Find the agent_state.json file in the workspace.
 
     The agent (claude_code.py) writes state to the --output-dir which is
-    typically generated-app/. Check there first, then fallback to parent.
+    typically the WORK_DIR subdirectory. Check there first, then fallback to parent.
     """
-    # Primary location: generated-app/ subdirectory (where claude_code.py writes)
-    generated_app_state = AGENT_RUNTIME_DIR / "generated-app" / "agent_state.json"
+    # Primary location: WORK_DIR subdirectory (where claude_code.py writes)
+    work_subdir = AGENT_RUNTIME_DIR if WORK_DIR == "." else AGENT_RUNTIME_DIR / WORK_DIR
+    generated_app_state = work_subdir / "agent_state.json"
     if generated_app_state.exists():
         return generated_app_state
 

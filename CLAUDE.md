@@ -69,6 +69,43 @@ Guide the user through interactive BUILD_PLAN creation:
    - Trigger the agent workflow
    - Show monitoring commands
 
+---
+
+#### Path C: Harness an Existing Project
+
+Connect an existing repository to the agent. The target repo carries its own config in `.harness/` — no Docker rebuild needed per project.
+
+**Architecture**: This repo is the "control plane" (Docker image, AgentCore runtime, shared infra). The target repo is the "workspace" (their code, their CI/CD). The agent clones the target repo at runtime and reads `.harness/PROJECT_HARNESS.md` from it.
+
+**Option 1: Guide setup from here (harness repo)**
+
+1. **Ask** for the target repo URL (e.g., `org/their-project`)
+2. **Clone** the target repo locally (or ask the user to open Claude in that repo)
+3. **Scan** the target repo for signals:
+   - `package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, `Makefile` → language/package manager
+   - Lock files → package manager
+   - Test configs → test framework
+   - `.github/workflows/` → existing CI/CD
+   - `.env.example` → required env vars
+4. **Ask** about what can't be auto-detected: auth, external deps, verification approach
+5. **Read** `prompts/PROJECT_HARNESS_TEMPLATE.md` for the skeleton structure
+6. **Generate** `.harness/PROJECT_HARNESS.md` in the target repo
+7. **Copy** `harness-setup/agent-trigger.yml` to target repo's `.github/workflows/`
+8. **Tell the user** to add GitHub secrets to the target repo:
+   - `HARNESS_REPO_TOKEN` — PAT that can trigger workflows on this harness repo
+   - Repository variable `HARNESS_REPO` — this repo's `org/name`
+   - Repository variable `AUTHORIZED_APPROVERS` — comma-separated usernames
+9. **Configure the harness** — update runtime env vars:
+   - `make update-runtime-env PROJECT_NAME={name} WORK_DIR=. BASE_BRANCH={branch}`
+10. **Test** — create a test issue on the target repo, add rocket reaction, verify
+
+**Option 2: Guide setup from the target repo**
+
+Tell the user to:
+1. Copy `harness-setup/CLAUDE.md` into their repo as `CLAUDE.md` (or merge with existing)
+2. Run `claude` in their repo — the CLAUDE.md there will guide the full setup interactively
+3. That flow generates `.harness/PROJECT_HARNESS.md`, adds the trigger workflow, and configures secrets
+
 ## Current State (2026-02-26)
 
 ### What's Working

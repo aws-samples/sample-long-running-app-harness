@@ -21,6 +21,21 @@ on:
         description: 'Issue number to build'
         required: true
         type: number
+      target_repo:
+        description: 'Target repository to clone and work on (defaults to this repo)'
+        required: false
+        type: string
+        default: ''
+      base_branch:
+        description: 'Base branch to create agent-runtime from (defaults to env var)'
+        required: false
+        type: string
+        default: ''
+      work_dir:
+        description: 'Working directory within the repo (defaults to env var)'
+        required: false
+        type: string
+        default: ''
       force_rebuild:
         description: 'Force rebuild even if already building'
         required: false
@@ -332,10 +347,17 @@ jobs:
           ISSUE_TITLE: ${{ needs.check-approval.outputs.issue_title }}
           ISSUE_BODY: ${{ needs.check-approval.outputs.issue_body }}
           RESUME_SESSION: ${{ github.event.inputs.resume_session || 'false' }}
+          TARGET_REPO: ${{ github.event.inputs.target_repo || '' }}
+          INPUT_BASE_BRANCH: ${{ github.event.inputs.base_branch || '' }}
+          INPUT_WORK_DIR: ${{ github.event.inputs.work_dir || '' }}
         run: |
           # Generate a unique session ID (min 33 chars required by AWS)
           SESSION_ID="gh-issue-${ISSUE_NUMBER}-$(date +%Y%m%d-%H%M%S)-${GITHUB_RUN_ID}"
           echo "session_id=$SESSION_ID" >> $GITHUB_OUTPUT
+
+          # Determine which repo the agent should clone
+          # If target_repo is set, clone that instead of this repo
+          CLONE_REPO="${TARGET_REPO:-$GITHUB_REPOSITORY}"
 
           # Prepare the payload for AgentCore
           # Decode the escaped body
@@ -348,13 +370,17 @@ jobs:
             RESUME_FLAG="false"
           fi
 
+          # Build payload — include per-project overrides if provided
+          # These override the runtime env vars so multiple projects can share one runtime
           PAYLOAD=$(cat << EOFPAYLOAD
           {
             "mode": "build-from-issue",
             "issue_number": $ISSUE_NUMBER,
             "issue_title": "$ISSUE_TITLE",
             "issue_body": $(echo "$DECODED_BODY" | jq -Rs .),
-            "github_repo": "$GITHUB_REPOSITORY",
+            "github_repo": "$CLONE_REPO",
+            "base_branch": "$INPUT_BASE_BRANCH",
+            "work_dir": "$INPUT_WORK_DIR",
             "branch_name": "agent-runtime",
             "session_id": "$SESSION_ID",
             "resume_session": $RESUME_FLAG

@@ -1,0 +1,119 @@
+# Agent Trigger Workflow
+#
+# Drop this into your project's .github/workflows/ directory.
+# It fires when an authorized user adds a rocket reaction to an issue,
+# then triggers the Agent Builder workflow on the harness repo.
+#
+# Required secrets:
+#   HARNESS_REPO_TOKEN - GitHub PAT with workflow dispatch permission on the harness repo
+#
+# Required variables:
+#   HARNESS_REPO - The harness repo (e.g., "org/agent-harness")
+#   AUTHORIZED_APPROVERS - Comma-separated GitHub usernames who can approve issues
+
+name: Agent Trigger
+
+on:
+  issues:
+    types: [opened, labeled]
+  issue_comment:
+    types: [created]
+  # Also allow manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to trigger agent for'
+        required: true
+        type: number
+
+# Prevent duplicate triggers for the same issue
+concurrency:
+  group: agent-trigger-${{ github.event.issue.number || github.event.inputs.issue_number }}
+  cancel-in-progress: false
+
+permissions:
+  issues: read
+
+jobs:
+  check-and-trigger:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check for rocket approval and trigger agent
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HARNESS_TOKEN: ${{ secrets.HARNESS_REPO_TOKEN }}
+          HARNESS_REPO: ${{ vars.HARNESS_REPO }}
+          AUTHORIZED_APPROVERS: ${{ vars.AUTHORIZED_APPROVERS }}
+        run: |
+          set -e
+
+          # Determine issue number
+          if [ -n "${{ github.event.inputs.issue_number }}" ]; then
+            ISSUE_NUMBER="${{ github.event.inputs.issue_number }}"
+          elif [ -n "${{ github.event.issue.number }}" ]; then
+            ISSUE_NUMBER="${{ github.event.issue.number }}"
+          else
+            echo "No issue number found"
+            exit 0
+          fi
+
+          # Check issue is open
+          STATE=$(gh issue view "$ISSUE_NUMBER" --json state --jq '.state')
+          if [ "$STATE" != "OPEN" ]; then
+            echo "Issue #$ISSUE_NUMBER is $STATE - skipping"
+            exit 0
+          fi
+
+          # Check for existing agent labels
+          LABELS=$(gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name')
+          if echo "$LABELS" | grep -q "agent-building"; then
+            echo "Issue #$ISSUE_NUMBER already being built - skipping"
+            exit 0
+          fi
+          if echo "$LABELS" | grep -q "agent-complete"; then
+            echo "Issue #$ISSUE_NUMBER already complete - skipping"
+            exit 0
+          fi
+
+          # Check for rocket reaction from authorized approver
+          APPROVED=false
+          IFS=',' read -ra APPROVERS <<< "$AUTHORIZED_APPROVERS"
+
+          # Get reactions via API
+          REACTIONS=$(gh api "repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER/reactions" \
+            --jq '.[] | select(.content == "rocket") | .user.login')
+
+          for REACTOR in $REACTIONS; do
+            for APPROVER in "${APPROVERS[@]}"; do
+              APPROVER=$(echo "$APPROVER" | xargs)  # trim whitespace
+              if [ "$REACTOR" = "$APPROVER" ]; then
+                APPROVED=true
+                echo "Approved by: $REACTOR"
+                break 2
+              fi
+            done
+          done
+
+          if [ "$APPROVED" != "true" ]; then
+            echo "Issue #$ISSUE_NUMBER not approved (no rocket from authorized approver)"
+            exit 0
+          fi
+
+          # Detect default branch
+          DEFAULT_BRANCH=$(gh api "repos/$GITHUB_REPOSITORY" --jq '.default_branch')
+          echo "Default branch: $DEFAULT_BRANCH"
+
+          # Trigger the Agent Builder on the harness repo
+          echo "Triggering Agent Builder on $HARNESS_REPO for issue #$ISSUE_NUMBER..."
+
+          # Use the harness repo token to trigger the workflow
+          # Pass all per-project config so the harness runtime doesn't need reconfiguring
+          GITHUB_TOKEN="$HARNESS_TOKEN" gh workflow run agent-builder.yml \
+            --repo "$HARNESS_REPO" \
+            -f issue_number="$ISSUE_NUMBER" \
+            -f target_repo="$GITHUB_REPOSITORY" \
+            -f base_branch="$DEFAULT_BRANCH" \
+            -f work_dir="."
+
+          echo "Agent Builder triggered for issue #$ISSUE_NUMBER"
