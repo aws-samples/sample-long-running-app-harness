@@ -60,7 +60,7 @@ jobs:
         id: agent
         env:
           CLAUDE_CODE_USE_BEDROCK: "1"
-          ANTHROPIC_MODEL: us.anthropic.claude-fable-5
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL || 'us.anthropic.claude-opus-4-6-v1' }}
           GH_TOKEN: ${{ github.token }}
           ISSUE: ${{ inputs.issue }}
         run: |
@@ -74,6 +74,11 @@ jobs:
           write CONTINUE instead and post a checklist comment of what remains.
           PROMPT
           )" --permission-mode acceptEdits --max-turns 300
+          agent_exit=$?
+          if [ ! -f .agent-status ] && [ $agent_exit -ne 0 ]; then
+            echo "agent session failed (exit $agent_exit) with no progress marker" >&2
+            exit $agent_exit
+          fi
           echo "status=$(cat .agent-status 2>/dev/null || echo CONTINUE)" >> "$GITHUB_OUTPUT"
           rm -f .agent-status
       - name: Push checkpoint
