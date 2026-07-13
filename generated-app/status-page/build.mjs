@@ -19,6 +19,7 @@ export function build() {
 
   // Replace __BUILD_TIME_UTC__ with current UTC ISO 8601 timestamp
   const buildTime = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+  const version = process.env.STATUS_PAGE_VERSION || 'dev';
 
   function replaceInDir(dir) {
     for (const entry of readdirSync(dir)) {
@@ -28,8 +29,14 @@ export function build() {
         replaceInDir(full);
       } else if (stat.isFile()) {
         const content = readFileSync(full, 'utf8');
-        if (content.includes('__BUILD_TIME_UTC__')) {
-          writeFileSync(full, content.replaceAll('__BUILD_TIME_UTC__', buildTime), 'utf8');
+        if (content.includes('__BUILD_TIME_UTC__') || content.includes('__STATUS_PAGE_VERSION__')) {
+          writeFileSync(
+            full,
+            content
+              .replaceAll('__BUILD_TIME_UTC__', buildTime)
+              .replaceAll('__STATUS_PAGE_VERSION__', version),
+            'utf8'
+          );
         }
       }
     }
@@ -40,7 +47,7 @@ export function build() {
   // Emit machine-readable build info with the same timestamp baked into the HTML
   writeFileSync(
     join(DIST, 'build-info.json'),
-    JSON.stringify({ builtAt: buildTime, page: 'status' }) + '\n',
+    JSON.stringify({ builtAt: buildTime, page: 'status', version }) + '\n',
     'utf8'
   );
 

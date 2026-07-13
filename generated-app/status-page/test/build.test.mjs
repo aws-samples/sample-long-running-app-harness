@@ -87,8 +87,8 @@ describe('status-page build', () => {
     assert.ok(isoPattern.test(info.builtAt), 'builtAt must be ISO 8601 UTC');
     assert.deepEqual(
       Object.keys(info).sort(),
-      ['builtAt', 'page'],
-      'build-info.json must contain exactly builtAt and page'
+      ['builtAt', 'page', 'version'],
+      'build-info.json must contain exactly builtAt, page and version'
     );
   });
 
@@ -98,6 +98,31 @@ describe('status-page build', () => {
     const timeMatch = html.match(/<time>([^<]+)<\/time>/);
     assert.ok(timeMatch, 'index.html must contain a <time> element');
     assert.equal(info.builtAt, timeMatch[1], 'JSON builtAt must equal the HTML baked time');
+  });
+
+  it('index.html contains a version footer with default "dev"', () => {
+    const html = readFileSync(join(DIST, 'index.html'), 'utf8');
+    assert.ok(html.includes('<footer>version: dev</footer>'), 'footer must show default version "dev"');
+    assert.ok(!html.includes('__STATUS_PAGE_VERSION__'), 'version placeholder must be replaced');
+  });
+
+  it('build-info.json contains the default version "dev"', () => {
+    const info = JSON.parse(readFileSync(join(DIST, 'build-info.json'), 'utf8'));
+    assert.equal(info.version, 'dev', 'version field must default to "dev"');
+  });
+
+  it('STATUS_PAGE_VERSION env var overrides the version', () => {
+    process.env.STATUS_PAGE_VERSION = '9.9.9-test';
+    try {
+      build();
+      const html = readFileSync(join(DIST, 'index.html'), 'utf8');
+      assert.ok(html.includes('<footer>version: 9.9.9-test</footer>'), 'footer must show overridden version');
+      const info = JSON.parse(readFileSync(join(DIST, 'build-info.json'), 'utf8'));
+      assert.equal(info.version, '9.9.9-test', 'build-info.json must show overridden version');
+    } finally {
+      delete process.env.STATUS_PAGE_VERSION;
+      build();
+    }
   });
 
   it('all referenced assets in HTML exist in dist/', () => {
