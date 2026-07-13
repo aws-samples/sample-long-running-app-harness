@@ -1,0 +1,30 @@
+name: Status Page – Test
+
+on:
+  push:
+    branches: ['agent-runtime', 'delivery-agent-tier3']
+    paths:
+      - 'generated-app/status-page/**'
+  pull_request:
+    paths:
+      - 'generated-app/status-page/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run build
+        working-directory: generated-app/status-page
+        run: node build.mjs
+
+      - name: Run tests
+        working-directory: generated-app/status-page
+        run: node --test test/

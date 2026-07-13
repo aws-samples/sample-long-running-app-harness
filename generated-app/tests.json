@@ -688,5 +688,63 @@
       "Verify priority badge is prominently displayed on cards"
     ],
     "passes": true
+  },
+  {
+    "id": "sp-build-output",
+    "category": "status-page",
+    "description": "Status page build script produces dist/index.html and dist/style.css with baked timestamp",
+    "steps": [
+      "Run node status-page/build.mjs",
+      "Verify dist/index.html exists with title Status and all systems go text",
+      "Verify __BUILD_TIME_UTC__ placeholder is replaced with valid ISO 8601 UTC timestamp",
+      "Verify dist/style.css exists"
+    ],
+    "passes": true
+  },
+  {
+    "id": "sp-tests-pass",
+    "category": "status-page",
+    "description": "Status page automated tests pass with node --test (9 assertions)",
+    "steps": [
+      "Run node --test status-page/test/",
+      "Verify all 9 tests pass including build output, timestamps, no external URLs, assets exist",
+      "Verify exit code 0"
+    ],
+    "passes": true
+  },
+  {
+    "id": "sp-no-ext-urls",
+    "category": "status-page",
+    "description": "Status page has no external network requests (fully self-contained)",
+    "steps": [
+      "Build the status page",
+      "Scan dist/index.html and dist/style.css for http:// or https:// references",
+      "Verify no external URLs are present (only relative asset references)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "sp-renders-page",
+    "category": "status-page",
+    "description": "Status page renders title, green badge, and build time in browser",
+    "steps": [
+      "Serve status-page/dist/ on a local HTTP server",
+      "Open in browser and verify Status title is visible",
+      "Verify green all systems go badge is visible",
+      "Verify build timestamp is displayed"
+    ],
+    "passes": true
+  },
+  {
+    "id": "sp-ci-workflows",
+    "category": "status-page",
+    "description": "GitHub Actions workflows exist for status page test and preview deploy",
+    "steps": [
+      "Verify .github/workflows/status-page-test.yml exists with path filter on status-page/**",
+      "Verify .github/workflows/status-page-preview.yml exists with S3/CloudFront deploy",
+      "Verify test workflow runs build and node --test",
+      "Verify preview workflow syncs dist/ to S3"
+    ],
+    "passes": true
   }
 ]
