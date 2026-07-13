@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Status</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <h1 class="title">Status</h1>
+    <div class="badge badge--green">all systems go</div>
+    <p class="build-time">Built at <time>2026-07-13T17:50:31Z</time></p>
+  </main>
+</body>
+</html>
+---
+index.html
+style.css

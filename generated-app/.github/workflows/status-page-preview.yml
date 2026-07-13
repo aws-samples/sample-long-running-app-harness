@@ -1,0 +1,89 @@
+name: Status Page – Preview Deploy
+
+on:
+  push:
+    branches: ['agent-runtime', 'delivery-agent-tier3']
+    paths:
+      - 'generated-app/status-page/**'
+  pull_request:
+    paths:
+      - 'generated-app/status-page/**'
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+
+permissions:
+  issues: write
+  contents: read
+  id-token: write
+
+concurrency:
+  group: status-page-preview-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    outputs:
+      preview_url: ${{ steps.deploy.outputs.preview_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build status page
+        working-directory: generated-app/status-page
+        run: node build.mjs
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ vars.AWS_PREVIEW_DEPLOY_ROLE_ARN }}
+          role-duration-seconds: 3600
+          role-skip-session-tagging: true
+
+      - name: Deploy to S3
+        id: deploy
+        env:
+          S3_BUCKET: ${{ vars.PREVIEWS_BUCKET_NAME }}
+          CLOUDFRONT_DOMAIN: ${{ vars.PREVIEWS_CDN_DOMAIN }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.PREVIEWS_DISTRIBUTION_ID }}
+        run: |
+          S3_PATH="s3://${S3_BUCKET}/previews/status-page/"
+
+          # Sync dist/ to S3 preview location
+          aws s3 sync generated-app/status-page/dist/ "$S3_PATH" \
+            --delete \
+            --cache-control "no-cache, no-store, must-revalidate"
+
+          # Create CloudFront invalidation
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
+            --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" \
+            --paths "/previews/status-page/*" \
+            --query 'Invalidation.Id' \
+            --output text)
+
+          echo "Invalidation created: $INVALIDATION_ID"
+
+          PREVIEW_URL="https://${CLOUDFRONT_DOMAIN}/previews/status-page/"
+          echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+          echo "Preview URL: $PREVIEW_URL"
+
+      - name: Post preview URL
+        if: steps.deploy.outputs.preview_url != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PREVIEW_URL: ${{ steps.deploy.outputs.preview_url }}
+        run: |
+          echo "Status page preview deployed to: $PREVIEW_URL"
+          # Post URL as issue comment if in a PR context
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            PR_NUM="${{ github.event.pull_request.number }}"
+            gh pr comment "$PR_NUM" --body "**Status Page Preview:** $PREVIEW_URL"
+          fi

@@ -1,0 +1,20 @@
+Build complete → dist/ (timestamp: 2026-07-13T17:48:59Z)
+▶ status-page build
+  ✔ produces dist/index.html (1.113599ms)
+  ✔ produces dist/style.css (0.195706ms)
+  ✔ index.html contains the page title "Status" (0.205629ms)
+  ✔ index.html contains "all systems go" (0.198219ms)
+  ✔ baked build time is valid ISO 8601 UTC (no placeholder remaining) (0.313604ms)
+  ✔ two builds produce different timestamps (1102.004952ms)
+  ✔ no external URLs in HTML output (0.808612ms)
+  ✔ no external URLs in CSS output (0.269991ms)
+  ✔ all referenced assets in HTML exist in dist/ (0.455564ms)
+✔ status-page build (1108.144351ms)
+ℹ tests 9
+ℹ suites 1
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1165.497018
