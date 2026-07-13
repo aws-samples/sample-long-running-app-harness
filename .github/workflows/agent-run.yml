@@ -44,7 +44,7 @@ jobs:
       - name: Assume AWS role via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_AGENTCORE_ROLE_ARN }}
+          role-to-assume: ${{ vars.DELIVERY_AGENT_ROLE_ARN }}
           aws-region: us-east-1
       - name: Label issue as building
         uses: actions/github-script@v7
@@ -60,7 +60,7 @@ jobs:
         id: agent
         env:
           CLAUDE_CODE_USE_BEDROCK: "1"
-          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL || 'us.anthropic.claude-opus-4-6-v1' }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL || 'us.anthropic.claude-fable-5' }}
           GH_TOKEN: ${{ github.token }}
           ISSUE: ${{ inputs.issue }}
         run: |
