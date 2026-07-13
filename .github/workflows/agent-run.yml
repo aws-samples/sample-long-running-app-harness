@@ -3,6 +3,9 @@
 # re-dispatches itself. A crashed run loses minutes, not hours.
 name: agent-run
 on:
+  push:
+    branches: [delivery-agent-tier3]
+    paths: [".github/workflows/agent-run.yml"]
   workflow_dispatch:
     inputs:
       issue:
@@ -31,6 +34,7 @@ env:
 
 jobs:
   run:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 110    # checkpoint well under the runner's 6 h ceiling
     steps:
