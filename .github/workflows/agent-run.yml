@@ -1,0 +1,113 @@
+# One checkpoint-resume agent run. Short sessions, repo state as the only
+# memory between runs: the agent commits progress; if the task isn't done it
+# re-dispatches itself. A crashed run loses minutes, not hours.
+name: agent-run
+on:
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Issue number being worked
+        required: true
+      skill:
+        description: Skill to run (design | build | verify | curate)
+        required: true
+      attempt:
+        description: Checkpoint chain counter
+        default: "1"
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: write
+  id-token: write   # OIDC → AWS for Bedrock + preview deploys
+
+concurrency:
+  group: agent-run          # one agent at a time; the lock the harness kept in SSM
+  cancel-in-progress: false
+
+env:
+  MAX_ATTEMPTS: 8
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 110    # checkpoint well under the runner's 6 h ceiling
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Assume AWS role via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_INFRA_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+      - name: Label issue as building
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: ${{ inputs.issue }}, labels: ['agent-building'],
+            });
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Run agent (checkpoint session)
+        id: agent
+        env:
+          CLAUDE_CODE_USE_BEDROCK: "1"
+          ANTHROPIC_MODEL: us.anthropic.claude-fable-5
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ inputs.issue }}
+        run: |
+          set +e
+          claude -p "$(cat <<'PROMPT'
+          Use the ${{ inputs.skill }} skill. You are working GitHub issue #${{ inputs.issue }}
+          (read it with: gh issue view $ISSUE). This is checkpoint attempt
+          ${{ inputs.attempt }}. Commit progress as you go. When the task is fully
+          complete per its acceptance criteria, write the single word DONE to a
+          file named .agent-status. If you ran out of time with work remaining,
+          write CONTINUE instead and post a checklist comment of what remains.
+          PROMPT
+          )" --permission-mode acceptEdits --max-turns 300
+          echo "status=$(cat .agent-status 2>/dev/null || echo CONTINUE)" >> "$GITHUB_OUTPUT"
+          rm -f .agent-status
+      - name: Push checkpoint
+        run: |
+          git config user.name "delivery-agent"
+          git config user.email "agent@users.noreply.github.com"
+          git add -A && git diff --cached --quiet || git commit -m "agent: checkpoint (issue #${{ inputs.issue }}, attempt ${{ inputs.attempt }})"
+          git push origin HEAD
+      - name: Re-dispatch if not done
+        if: steps.agent.outputs.status != 'DONE' && fromJSON(inputs.attempt) < fromJSON(env.MAX_ATTEMPTS)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner, repo: context.repo.repo,
+              workflow_id: 'agent-run.yml', ref: context.ref,
+              inputs: {
+                issue: '${{ inputs.issue }}',
+                skill: '${{ inputs.skill }}',
+                attempt: String(${{ inputs.attempt }} + 1),
+              },
+            });
+      - name: On completion, hand off to verify (build tasks only)
+        if: steps.agent.outputs.status == 'DONE' && inputs.skill == 'build'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner, repo: context.repo.repo,
+              workflow_id: 'agent-run.yml', ref: context.ref,
+              inputs: { issue: '${{ inputs.issue }}', skill: 'verify', attempt: '1' },
+            });
+      - name: Remove building label when chain ends
+        if: steps.agent.outputs.status == 'DONE' || fromJSON(inputs.attempt) >= fromJSON(env.MAX_ATTEMPTS)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: ${{ inputs.issue }}, name: 'agent-building',
+            }).catch(() => {});
