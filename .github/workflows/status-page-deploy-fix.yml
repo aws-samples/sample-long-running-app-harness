@@ -1,0 +1,52 @@
+# Deploys the status-page (issue #13) to its own preview prefix.
+# Runs from this branch on push — fixes the wrinkle where the issue's preview
+# URL served the Canopy app dist instead of the artifact that was built.
+name: status-page-deploy-fix
+on:
+  push:
+    branches: [agent-runtime]
+    paths:
+      - "generated-app/status-page/**"
+      - ".github/workflows/status-page-deploy-fix.yml"
+
+permissions:
+  contents: read
+  issues: write
+  id-token: write
+
+concurrency:
+  group: status-page-deploy-fix
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test then build
+        working-directory: generated-app/status-page
+        run: |
+          node --test test/
+          node -e "import('./build.mjs').then(m => m.build())"
+          test -f dist/index.html
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_PREVIEW_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+      - name: Deploy to own preview prefix
+        run: |
+          aws s3 sync generated-app/status-page/dist/ \
+            "s3://${{ vars.PREVIEWS_BUCKET_NAME }}/previews/issue-13/status-page/" --delete
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.PREVIEWS_DISTRIBUTION_ID }}" \
+            --paths "/previews/issue-13/status-page/*"
+      - name: Post the real preview URL to issue 13
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment 13 -R "$GITHUB_REPOSITORY" --body \
+          "✅ **Status-page preview (corrected)**: https://${{ vars.PREVIEWS_CDN_DOMAIN }}/previews/issue-13/status-page/index.html — built and tested in [this run](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}); previous URL served the Canopy dist."
