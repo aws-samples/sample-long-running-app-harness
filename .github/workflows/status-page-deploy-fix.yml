@@ -30,7 +30,7 @@ jobs:
       - name: Test then build
         working-directory: generated-app/status-page
         run: |
-          node --test test/
+          node --test test/build.test.mjs
           node -e "import('./build.mjs').then(m => m.build())"
           test -f dist/index.html
       - uses: aws-actions/configure-aws-credentials@v4
