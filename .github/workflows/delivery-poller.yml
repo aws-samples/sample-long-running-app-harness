@@ -1,0 +1,66 @@
+# Detects approved work and dispatches an agent run.
+# Approval gate: an authorized approver reacts 🚀 on the issue.
+name: delivery-poller
+on:
+  push:
+    branches: [delivery-agent-tier3]
+    paths: [".github/workflows/delivery-poller.yml"]
+  workflow_dispatch: {}
+
+permissions:
+  issues: read
+  actions: write
+
+concurrency:
+  group: delivery-poller
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find highest-voted approved issue not already building
+        id: pick
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const approvers = (process.env.APPROVERS || '').split(',').filter(Boolean);
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', per_page: 100,
+            });
+            let best = null, bestVotes = -1;
+            for (const issue of issues) {
+              const labels = issue.labels.map(l => l.name);
+              if (!labels.includes('delivery-agent')) continue;
+              if (labels.includes('agent-building') || labels.includes('needs-input')) continue;
+              const reactions = await github.paginate(github.rest.reactions.listForIssue, {
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issue.number, per_page: 100,
+              });
+              const approved = reactions.some(r => r.content === 'rocket' &&
+                (approvers.length === 0 || approvers.includes(r.user.login)));
+              if (!approved) continue;
+              const votes = reactions.filter(r => r.content === '+1').length;
+              if (votes > bestVotes) { best = issue; bestVotes = votes; }
+            }
+            if (best) {
+              core.setOutput('issue', best.number);
+              core.setOutput('kind', best.labels.map(l => l.name).includes('design') ? 'design' : 'build');
+            }
+        env:
+          APPROVERS: ${{ vars.APPROVERS }}
+      - name: Dispatch agent run
+        if: steps.pick.outputs.issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner, repo: context.repo.repo,
+              workflow_id: 'agent-run.yml', ref: context.ref,
+              inputs: {
+                issue: '${{ steps.pick.outputs.issue }}',
+                skill: '${{ steps.pick.outputs.kind }}',
+              },
+            });

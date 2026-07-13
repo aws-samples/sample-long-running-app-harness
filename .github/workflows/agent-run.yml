@@ -73,7 +73,7 @@ jobs:
           file named .agent-status. If you ran out of time with work remaining,
           write CONTINUE instead and post a checklist comment of what remains.
           PROMPT
-          )" --permission-mode acceptEdits --max-turns 300
+          )" --dangerously-skip-permissions --max-turns 300
           agent_exit=$?
           if [ ! -f .agent-status ] && [ $agent_exit -ne 0 ]; then
             echo "agent session failed (exit $agent_exit) with no progress marker" >&2
