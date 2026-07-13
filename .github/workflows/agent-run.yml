@@ -44,7 +44,7 @@ jobs:
       - name: Assume AWS role via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_INFRA_DEPLOY_ROLE_ARN }}
+          role-to-assume: ${{ vars.AWS_AGENTCORE_ROLE_ARN }}
           aws-region: us-east-1
       - name: Label issue as building
         uses: actions/github-script@v7
