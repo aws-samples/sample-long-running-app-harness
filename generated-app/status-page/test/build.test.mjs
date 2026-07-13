@@ -75,6 +75,31 @@ describe('status-page build', () => {
     assert.equal(matches, null, `CSS must not reference external URLs, found: ${matches}`);
   });
 
+  it('produces dist/build-info.json', () => {
+    assert.ok(existsSync(join(DIST, 'build-info.json')), 'dist/build-info.json must exist');
+  });
+
+  it('build-info.json is valid JSON with correct fields', () => {
+    const raw = readFileSync(join(DIST, 'build-info.json'), 'utf8');
+    const info = JSON.parse(raw);
+    assert.equal(info.page, 'status', 'page field must be "status"');
+    const isoPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
+    assert.ok(isoPattern.test(info.builtAt), 'builtAt must be ISO 8601 UTC');
+    assert.deepEqual(
+      Object.keys(info).sort(),
+      ['builtAt', 'page'],
+      'build-info.json must contain exactly builtAt and page'
+    );
+  });
+
+  it('build-info.json builtAt matches the HTML <time> value', () => {
+    const info = JSON.parse(readFileSync(join(DIST, 'build-info.json'), 'utf8'));
+    const html = readFileSync(join(DIST, 'index.html'), 'utf8');
+    const timeMatch = html.match(/<time>([^<]+)<\/time>/);
+    assert.ok(timeMatch, 'index.html must contain a <time> element');
+    assert.equal(info.builtAt, timeMatch[1], 'JSON builtAt must equal the HTML baked time');
+  });
+
   it('all referenced assets in HTML exist in dist/', () => {
     const html = readFileSync(join(DIST, 'index.html'), 'utf8');
     // Match href="..." and src="..." (excluding absolute URLs)

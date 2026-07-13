@@ -37,6 +37,13 @@ export function build() {
 
   replaceInDir(DIST);
 
+  // Emit machine-readable build info with the same timestamp baked into the HTML
+  writeFileSync(
+    join(DIST, 'build-info.json'),
+    JSON.stringify({ builtAt: buildTime, page: 'status' }) + '\n',
+    'utf8'
+  );
+
   return buildTime;
 }
 
