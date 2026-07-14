@@ -17,3 +17,6 @@ Page must be fully self-contained: inline or local CSS/JS, no fonts/CDNs/APIs. R
 
 ## Deploy target: S3/CloudFront preview
 Preview deploys push built static files to S3 behind CloudFront, matching the host repo's existing deploy pattern. Rationale: consistency with the rest of the repo.
+
+## Health endpoint as static file
+`/health.json` is a static file (`{"ok": true}`) copied into dist by build.mjs, not generated dynamically. Rationale: user request; fits the zero-dependency static-site model and the S3/CloudFront deploy.
