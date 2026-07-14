@@ -125,6 +125,26 @@ describe('status-page build', () => {
     }
   });
 
+  it('produces dist/health.json', () => {
+    assert.ok(existsSync(join(DIST, 'health.json')), 'dist/health.json must exist');
+  });
+
+  it('health.json is valid JSON', () => {
+    const raw = readFileSync(join(DIST, 'health.json'), 'utf8');
+    assert.doesNotThrow(() => JSON.parse(raw), 'health.json must parse as valid JSON');
+  });
+
+  it('health.json has ok === true', () => {
+    const health = JSON.parse(readFileSync(join(DIST, 'health.json'), 'utf8'));
+    assert.equal(health.ok, true, 'ok field must be true');
+  });
+
+  it('health.json is a byte-for-byte copy of the source file', () => {
+    const src = readFileSync(join(ROOT, 'src', 'health.json'), 'utf8');
+    const dist = readFileSync(join(DIST, 'health.json'), 'utf8');
+    assert.equal(dist, src, 'dist/health.json must be identical to src/health.json');
+  });
+
   it('all referenced assets in HTML exist in dist/', () => {
     const html = readFileSync(join(DIST, 'index.html'), 'utf8');
     // Match href="..." and src="..." (excluding absolute URLs)
