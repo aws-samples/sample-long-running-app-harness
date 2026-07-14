@@ -88,4 +88,19 @@ describe('status-page build', () => {
       assert.ok(existsSync(assetPath), `Referenced asset "${ref}" must exist in dist/`);
     }
   });
+
+  it('produces dist/health.json', () => {
+    assert.ok(existsSync(join(DIST, 'health.json')), 'dist/health.json must exist');
+  });
+
+  it('dist/health.json parses as valid JSON', () => {
+    const content = readFileSync(join(DIST, 'health.json'), 'utf8');
+    assert.doesNotThrow(() => JSON.parse(content), 'health.json must be valid JSON');
+  });
+
+  it('dist/health.json has ok === true', () => {
+    const content = readFileSync(join(DIST, 'health.json'), 'utf8');
+    const data = JSON.parse(content);
+    assert.strictEqual(data.ok, true, 'health.json must have ok === true');
+  });
 });

@@ -704,10 +704,10 @@
   {
     "id": "sp-tests-pass",
     "category": "status-page",
-    "description": "Status page automated tests pass with node --test (9 assertions)",
+    "description": "Status page automated tests pass with node --test (12 assertions including health.json)",
     "steps": [
       "Run node --test status-page/test/",
-      "Verify all 9 tests pass including build output, timestamps, no external URLs, assets exist",
+      "Verify all 12 tests pass including build output, timestamps, no external URLs, assets exist, health.json",
       "Verify exit code 0"
     ],
     "passes": true
@@ -744,6 +744,18 @@
       "Verify .github/workflows/status-page-preview.yml exists with S3/CloudFront deploy",
       "Verify test workflow runs build and node --test",
       "Verify preview workflow syncs dist/ to S3"
+    ],
+    "passes": true
+  },
+  {
+    "id": "sp-health-file",
+    "category": "status-page",
+    "description": "Build produces dist/health.json that parses as valid JSON with ok === true",
+    "steps": [
+      "Run status-page build",
+      "Verify dist/health.json exists after build",
+      "Verify dist/health.json parses as valid JSON",
+      "Verify parsed content has ok === true"
     ],
     "passes": true
   }

@@ -37,6 +37,9 @@ export function build() {
 
   replaceInDir(DIST);
 
+  // Copy health.json as byte-for-byte copy (no templating)
+  cpSync(join(SRC, 'health.json'), join(DIST, 'health.json'));
+
   return buildTime;
 }
 

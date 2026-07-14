@@ -1,10 +1,32 @@
 CANOPY PROJECT MANAGEMENT APP - PROGRESS UPDATE
 =================================================
-Last Updated: 2026-07-13 (Session 18 - Status Page Feature, Issue #13)
+Last Updated: 2026-07-14 (Session 19 - Health JSON Feature, Issue #22)
 
-## STATUS: ALL PHASES COMPLETE + STATUS PAGE BUILT
-All 4 phases are complete. All phase gates pass. 77 tests total (72 existing + 5 new). 20 CDK tests pass.
-Status page feature fully implemented per delivery-agent-tier3 backlog (001-pipeline, 002-status-page-build, 003-tests).
+## STATUS: ALL PHASES COMPLETE + STATUS PAGE + HEALTH JSON
+All 4 phases are complete. All phase gates pass. 78 tests total (77 existing + 1 new). 20 CDK tests pass.
+Health.json static endpoint added to status-page build output per backlog/006-health-json.md.
+
+## SESSION 19 - HEALTH JSON FEATURE (Issue #22)
+
+### What was implemented:
+Per backlog/006-health-json.md requirements:
+
+1. **status-page/src/health.json**: Static source file with content `{"ok": true}`
+2. **status-page/build.mjs**: Updated to explicitly copy health.json as byte-for-byte copy to dist/ (after template replacement step, ensuring no modification)
+3. **status-page/test/build.test.mjs**: Extended with 3 new test assertions:
+   - `produces dist/health.json` - verifies file exists after build
+   - `dist/health.json parses as valid JSON` - verifies it's valid JSON
+   - `dist/health.json has ok === true` - verifies content correctness
+4. **tests.json**: Updated sp-tests-pass to reflect 12 assertions; added sp-health-file test entry
+
+### Acceptance Criteria Met:
+- ✅ `node --test test/build.test.mjs` passes with all 12 tests (9 original + 3 new)
+- ✅ After running build, `dist/health.json` exists
+- ✅ `dist/health.json` parses as JSON and equals `{"ok": true}`
+- ✅ Existing build outputs (HTML, build-info.json/style.css) unchanged in behavior
+- ✅ All prior tests still pass
+- ✅ No files outside generated-app/status-page/ modified (except tests.json and claude-progress.txt)
+- ✅ No new dependencies added (Node built-ins only)
 
 ## SESSION 18 - STATUS PAGE FEATURE (Issue #13)
 
