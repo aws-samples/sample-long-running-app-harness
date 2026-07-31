@@ -2,12 +2,6 @@
 > @canopy/infrastructure@1.0.0 test
 > jest
 
-Bundling asset TestStack/CanopyApiHandler/Code/Stage...
-
-  ...ff97f162cd01f0f9558af6f4eae7d39d4d9536a55f9e81-building/index.js   75.8kb
-  ...f162cd01f0f9558af6f4eae7d39d4d9536a55f9e81-building/index.js.map  293.3kb
-
-⚡ Done in 22ms
   console.warn
     [WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin is deprecated.
       Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
@@ -47,38 +41,3 @@ Bundling asset TestStack/CanopyApiHandler/Code/Stage...
       at new CanopyStack (lib/canopy-stack.ts:151:26)
       at Object.<anonymous> (test/canopy-stack.test.ts:10:19)
 
-PASS test/canopy-stack.test.ts (17.163 s)
-  CanopyStack
-    ✓ matches snapshot (7 ms)
-    DynamoDB
-      ✓ creates a DynamoDB table with correct key schema (7 ms)
-      ✓ DynamoDB table has three GSIs (3 ms)
-      ✓ DynamoDB table has point-in-time recovery enabled (1 ms)
-    Lambda
-      ✓ creates a Lambda function with Node.js 20 runtime (2 ms)
-      ✓ Lambda has TABLE_NAME environment variable (1 ms)
-      ✓ Lambda has ATTACHMENT_BUCKET_NAME environment variable (1 ms)
-    API Gateway
-      ✓ creates an HTTP API (1 ms)
-      ✓ API Gateway has CORS configured
-    S3 and CloudFront
-      ✓ creates an S3 bucket for frontend (1 ms)
-      ✓ creates an S3 bucket for attachments (1 ms)
-      ✓ creates a CloudFront distribution (1 ms)
-      ✓ CloudFront has SPA routing error responses
-    IAM
-      ✓ Lambda has DynamoDB read/write policy (1 ms)
-    S3 Attachments IAM
-      ✓ Lambda has S3 read/write policy for attachments (2 ms)
-    Stack Outputs
-      ✓ exports ApiUrl (1 ms)
-      ✓ exports FrontendBucketName (1 ms)
-      ✓ exports DistributionId
-      ✓ exports DistributionDomain
-      ✓ exports AttachmentsBucketName (1 ms)
-
-Test Suites: 1 passed, 1 total
-Tests:       20 passed, 20 total
-Snapshots:   1 passed, 1 total
-Time:        17.417 s
-Ran all test suites.

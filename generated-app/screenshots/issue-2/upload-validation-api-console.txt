@@ -1,1 +1,2 @@
-NO_CONSOLE_ERRORS
+{"error":{"code":"VALIDATION_ERROR","message":"Invalid request body","details":[{"code":"too_big","maximum":52428800,"type":"number","inclusive":true,"exact":false,"message":"Number must be less than or equal to 52428800","path":["fileSize"]}]}}
+400
