@@ -758,5 +758,37 @@
       "Verify parsed content has ok === true"
     ],
     "passes": true
+  },
+  {
+    "id": "upload-validation-api",
+    "category": "backend",
+    "description": "API rejects file uploads over 50MB with 400 VALIDATION_ERROR",
+    "steps": [
+      "POST to /issues/:id/attachments with fileSize exceeding 50MB (60000000)",
+      "Verify 400 response with VALIDATION_ERROR code",
+      "Verify error details mention maximum file size"
+    ],
+    "passes": true
+  },
+  {
+    "id": "upload-metadata-fields",
+    "category": "backend",
+    "description": "Attachment list returns complete metadata including filename, contentType, fileSize, s3Key",
+    "steps": [
+      "GET /issues/:id/attachments to list existing attachments",
+      "Verify response contains filename, contentType, fileSize, s3Key, and id fields",
+      "Verify attachment data matches what was uploaded"
+    ],
+    "passes": true
+  },
+  {
+    "id": "upload-e2e-tests-pass",
+    "category": "functional",
+    "description": "File upload e2e Playwright tests all pass (attachment-ui.spec.ts)",
+    "steps": [
+      "Run npx playwright test e2e-tests/attachment-ui.spec.ts",
+      "Verify all 3 tests pass: board loads, detail panel shows attachments, upload button works"
+    ],
+    "passes": true
   }
 ]

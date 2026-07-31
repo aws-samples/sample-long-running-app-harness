@@ -1,1 +1,1 @@
-COMPILATION OK
+Command completed successfully

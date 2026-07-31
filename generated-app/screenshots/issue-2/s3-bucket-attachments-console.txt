@@ -1,13 +1,13 @@
 
 > @canopy/infrastructure@1.0.0 test
-> jest --testNamePattern attachments
+> jest --testNamePattern S3 bucket for attachments
 
 Bundling asset TestStack/CanopyApiHandler/Code/Stage...
 
-  ...ea39fb96166b588b1d1a9f44b5d009264f454623e1c94a-building/index.js   75.8kb
-  ...fb96166b588b1d1a9f44b5d009264f454623e1c94a-building/index.js.map  293.3kb
+  ...bf3ea428c51fe6fd08c57357346b29ab986ecadf4766d4-building/index.js   75.8kb
+  ...a428c51fe6fd08c57357346b29ab986ecadf4766d4-building/index.js.map  293.3kb
 
-⚡ Done in 17ms
+⚡ Done in 16ms
   console.warn
     [WARNING] aws-cdk-lib.aws_cloudfront_origins.S3Origin is deprecated.
       Use `S3BucketOrigin` or `S3StaticWebsiteOrigin` instead.
@@ -47,7 +47,7 @@ Bundling asset TestStack/CanopyApiHandler/Code/Stage...
       at new CanopyStack (lib/canopy-stack.ts:151:26)
       at Object.<anonymous> (test/canopy-stack.test.ts:10:19)
 
-PASS test/canopy-stack.test.ts (9.403 s)
+PASS test/canopy-stack.test.ts (9.172 s)
   CanopyStack
     ○ skipped matches snapshot
     DynamoDB
@@ -62,23 +62,23 @@ PASS test/canopy-stack.test.ts (9.403 s)
       ○ skipped creates an HTTP API
       ○ skipped API Gateway has CORS configured
     S3 and CloudFront
-      ✓ creates an S3 bucket for attachments (5 ms)
+      ✓ creates an S3 bucket for attachments (6 ms)
       ○ skipped creates an S3 bucket for frontend
       ○ skipped creates a CloudFront distribution
       ○ skipped CloudFront has SPA routing error responses
     IAM
       ○ skipped Lambda has DynamoDB read/write policy
     S3 Attachments IAM
-      ✓ Lambda has S3 read/write policy for attachments (3 ms)
+      ○ skipped Lambda has S3 read/write policy for attachments
     Stack Outputs
-      ✓ exports AttachmentsBucketName (1 ms)
       ○ skipped exports ApiUrl
       ○ skipped exports FrontendBucketName
       ○ skipped exports DistributionId
       ○ skipped exports DistributionDomain
+      ○ skipped exports AttachmentsBucketName
 
 Test Suites: 1 passed, 1 total
-Tests:       17 skipped, 3 passed, 20 total
+Tests:       19 skipped, 1 passed, 20 total
 Snapshots:   0 total
-Time:        9.657 s, estimated 10 s
-Ran all test suites with tests matching "attachments".
+Time:        9.411 s, estimated 10 s
+Ran all test suites with tests matching "S3 bucket for attachments".

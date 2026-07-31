@@ -1,10 +1,33 @@
 CANOPY PROJECT MANAGEMENT APP - PROGRESS UPDATE
 =================================================
-Last Updated: 2026-07-14 (Session 19 - Health JSON Feature, Issue #22)
+Last Updated: 2026-07-31 (Session 20 - File Upload Feature Re-verification, Issue #2)
 
-## STATUS: ALL PHASES COMPLETE + STATUS PAGE + HEALTH JSON
-All 4 phases are complete. All phase gates pass. 78 tests total (77 existing + 1 new). 20 CDK tests pass.
-Health.json static endpoint added to status-page build output per backlog/006-health-json.md.
+## STATUS: ALL PHASES COMPLETE + FILE UPLOAD VERIFIED
+All 4 phases are complete. All phase gates pass. 81 tests total (78 existing + 3 new). 20 CDK tests pass.
+File upload feature (Issue #2) fully verified: backend API endpoints, infrastructure, and frontend UI all working.
+
+## SESSION 20 - FILE UPLOAD FEATURE RE-VERIFICATION (Issue #2)
+
+### What was done:
+The file upload feature was already implemented in Sessions 6-7. This session verified:
+
+1. **Shared schemas compile**: `cd shared && npx tsc --noEmit` ✅
+2. **Infrastructure tests pass**: 20/20 CDK tests ✅ (including S3 attachments bucket, Lambda env var)
+3. **Frontend build passes**: `npx vite build` ✅ (2374 modules, 7.10s)
+4. **API endpoints verified**:
+   - POST /issues/:id/attachments → 201 with attachment metadata + presigned S3 upload URL ✅
+   - GET /issues/:id/attachments → 200 with attachment array ✅
+   - GET /attachments/:id/download → 200 with presigned download URL ✅
+   - DELETE /attachments/:id → 200 with {success: true} ✅
+   - File size validation → 400 for files > 50MB ✅
+5. **Frontend UI verified**: Issue detail panel shows Attachments section with upload button, drop zone, and file list ✅
+6. **E2E tests pass**: `npx playwright test e2e-tests/attachment-ui.spec.ts` → 3/3 pass ✅
+7. **No console errors** on any page ✅
+
+### New Tests Added (3) - Tests 79-81 (IDs: upload-validation-api, upload-metadata-fields, upload-e2e-tests-pass)
+- API rejects file uploads over 50MB with 400 VALIDATION_ERROR
+- Attachment list returns complete metadata including filename, contentType, fileSize, s3Key
+- File upload e2e Playwright tests all pass (attachment-ui.spec.ts)
 
 ## SESSION 19 - HEALTH JSON FEATURE (Issue #22)
 
